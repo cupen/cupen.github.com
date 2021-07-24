@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>    Windows/msys2 下安装和使用 ansible
+</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+            <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/normalize.css">
+        <link href='//fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+        <link href='//fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/main.css">
+
+    <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/blog.css">
+    <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/github.css">
+        <script src="https://blog.dogame.cc/theme/js/vendor/modernizr-2.6.2.min.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+
+        <div id="wrapper">
+<header id="sidebar" class="side-shadow">
+    <hgroup id="site-header">
+        <a id="site-title" href="https://blog.dogame.cc"><h1><i class="icon-coffee"></i> 吹水轩</h1></a>
+        <p id="site-desc"> 吃饭、睡觉、看书、抬杠。 </p>
+    </hgroup>
+    <nav>
+        <ul id="nav-links">
+                <li><a href="https://blog.dogame.cc/pages/about.html">关于</a></li>
+                <li><a href="https://blog.dogame.cc/pages/duo-ming-qing-dan.html">夺命清单</a></li>
+        </ul>
+    </nav>
+<footer id="site-info">
+</footer></header>
+    <div id="post-container">
+        <ol id="post-list">
+            <li>
+                <article class="post-entry">
+                    <header class="entry-header">
+                        <time class="post-time" datetime="2017-10-17T19:32:33+08:00" pubdate>
+                            2017年10月17日 Tuesday
+                        </time>
+                        <a href="https://blog.dogame.cc/articles/2017-10-17/guide-install-ansible-on-windows.html" rel="bookmark"><h1>Windows/msys2 下安装和使用 ansible</h1></a>
+                    </header>
+
+                    <section class="post-content">
+                        <p>尽管 ansible 官方不支持 Windows，但 Windows 上的一些 POSIX 兼容环境是可以的，这里记录下使用 msys2 环境安装 ansible 的过程。msys2 是基于 cygwin 开发的，用法与其相似。</p>
+<p>通常来说，直接执行 <code>pip2 install ansible</code> 即可, 但由于一些依赖（准确说是依赖的依赖）包含需要编译的 C 代码，加上 msys2 并不能完全无修改地编译一些专为 *nix 写的 C 代码，导致在安装 ansible 前需要一点小折腾。顺带吐槽下，即便是官方支持的 *nix 环境，也不是 100%  就能免于折腾，这是 C 的工程特(Wen)性(Ti)决定的。</p>
+<p>下面开始苦痛之旅。  </p>
+<h2>安装 python2 环境 和 C/C++ 编译环境</h2>
+<div class="codehilite"><pre><span></span><code>pacman -S python2 python2-pip --noconfirm
+pacman -S base-devel --noconfirm
+</code></pre></div>
+
+<h2>安装依赖 cffi （头文件路径问题）</h2>
+<div class="codehilite"><pre><span></span><code>pacman -S libffi-devel --noconfirm
+<span class="nv">path_libffi_include</span><span class="o">=</span><span class="k">$(</span>pacman -Ql libffi-devel <span class="p">|</span> grep -o -e <span class="s1">&#39;[^ ]*include/$&#39;</span> <span class="k">)</span>
+ln -s <span class="nv">$path_libffi_include</span> /usr/include/libffi
+pip2 install cffi
+</code></pre></div>
+
+<h2>安装依赖 pycrypto （未定义的 u_int ）</h2>
+<p>问题讨论见:<br>
+<a href="http://cygwin.1069669.n5.nabble.com/python-2-7-12-pip-install-with-extensions-fails-with-warning-quot-BSD-VISIBLE-quot-redefined-td131045.html">http://cygwin.1069669.n5.nabble.com/python-2-7-12-pip-install-with-extensions-fails-with-warning-quot-BSD-VISIBLE-quot-redefined-td131045.html</a></p>
+<div class="codehilite"><pre><span></span><code>pacman -S openssl-devel --noconfirm
+sed -i <span class="s2">&quot;s/#define __BSD_VISIBLE 1/#define __BSD_VISIBLE 0/g&quot;</span> /usr/include/python2.7/pyconfig.h
+pip2 install pycrypto
+</code></pre></div>
+
+<h2>安装 ansible  完事！</h2>
+<div class="codehilite"><pre><span></span><code>pip2 install <span class="nv">ansible</span><span class="o">==</span><span class="m">2</span>.3
+</code></pre></div>
+
+<h2>坚持下，再绕过一个神坑</h2>
+<p>现在可以执行 ansible 了，但你大概率会碰到这样的一个错误。  </p>
+<div class="codehilite"><pre><span></span><code>Failed to connect to the host via ssh: mux_client_request_session: <span class="nb">read</span> from master failed: Connection reset by peer  
+Failed to connect to new control master  
+</code></pre></div>
+
+<p>可参考:<br>
+<a href="https://github.com/ansible/ansible/issues/6363">https://github.com/ansible/ansible/issues/6363</a><br>
+至于 ansible 开发者说的 <code>Ansible doesn't support running from cygwin.</code>，翻译下就是“哥没空支持旁门左道平台”。
+不鸟他，继续我们的苦痛之旅。<br>
+修改 <code>/etc/ansible/ansible.cfg</code></p>
+<div class="codehilite"><pre><span></span><code><span class="k">[ssh_connection]</span>
+<span class="na">ssh_args</span> <span class="o">=</span> <span class="s">-o ControlMaster=no -o ControlPersist=60s</span>
+</code></pre></div>
+
+<p>如果你还没有这个文件,可以执行下面的一坨 bash 一步到位（如果不灵，可反馈给我修正下）。</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">ansible_cfg_src</span><span class="o">=</span>https://raw.githubusercontent.com/ansible/ansible/devel/examples/ansible.cfg
+<span class="nv">ansible_cfg_dest</span><span class="o">=</span>/etc/ansible/ansible.cfg
+
+mkdir -p /etc/ansible/
+<span class="o">[</span> -f <span class="nv">$ansible_cfg_dest</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> mv <span class="nv">$ansible_cfg_dest</span> <span class="nv">$ansible_cfg_dest</span>.bak <span class="c1"># backup.</span>
+wget <span class="nv">$ansible_cfg_src</span> -O <span class="nv">$ansible_cfg_dest</span>
+sed -i <span class="s2">&quot;s/^\[ssh_connection\]/\[ssh_connection\]\nssh_args = -o ControlMaster=no -o ControlPersist=60s\n/g&quot;</span> <span class="nv">$ansible_cfg_dest</span>
+</code></pre></div>
+
+<h2>搞定，可以开始爽了。</h2>
+<div class="codehilite"><pre><span></span><code>ansible all -m ping
+</code></pre></div>
+
+<p>完。</p>
+                    </section>
+                    <hr/>
+                    <aside class="post-meta">
+                        <p>Category: <a href="https://blog.dogame.cc/category/articles.html">articles</a></p>
+                    </aside>
+                    <hr/>
+
+<div class="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    /* See https://disqus.com/admin/install/platforms/universalcode/ */
+    var disqus_config = function () {
+        // this.page.url = 'articles/2017-10-17/guide-install-ansible-on-windows.html';
+        this.page.identifier = 'articles/2017-10-17/guide-install-ansible-on-windows.html';
+    };
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+    s.src = 'https://cupen.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+                </article>
+            </li>
+        </ol>
+    </div>
+        </div>
+
+        <script src="https://blog.dogame.cc/theme/js/main.js"></script>
+    </body>
+</html>
