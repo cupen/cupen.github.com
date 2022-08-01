@@ -1,74 +1,86 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>    关于从业以来服务端日志的若干历史问题的决议
-</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width">
-            <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/normalize.css">
-        <link href='//fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
-        <link href='//fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/font-awesome.min.css">
-        <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/main.css">
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="cupen<xcupen@gmail.com>">
+  <meta name="description" content="Posts and writings by cupen<xcupen@gmail.com>">
+  <title>
+    吹水轩
+&ndash; 关于从业以来服务端日志的若干历史问题的决议  </title>
 
-    <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/blog.css">
-    <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/github.css">
-        <script src="https://blog.dogame.cc/theme/js/vendor/modernizr-2.6.2.min.js"></script>
-    </head>
-    <body>
-        <!--[if lt IE 7]>
-            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
-        <![endif]-->
+    <link rel="canonical" href="https://blog.dogame.cc/articles/2016-12-21/thinks-serverlog.html">
 
-        <div id="wrapper">
-<header id="sidebar" class="side-shadow">
-    <hgroup id="site-header">
-        <a id="site-title" href="https://blog.dogame.cc"><h1><i class="icon-coffee"></i> 吹水轩</h1></a>
-        <p id="site-desc"> 吃饭、睡觉、看书、抬杠。 </p>
-    </hgroup>
-    <nav>
-        <ul id="nav-links">
-                <li><a href="https://blog.dogame.cc/pages/about.html">关于</a></li>
-                <li><a href="https://blog.dogame.cc/pages/duo-ming-qing-dan.html">夺命清单</a></li>
-        </ul>
-    </nav>
-<footer id="site-info">
-</footer></header>
-    <div id="post-container">
-        <ol id="post-list">
-            <li>
-                <article class="post-entry">
-                    <header class="entry-header">
-                        <time class="post-time" datetime="2016-12-21T03:19:00+08:00" pubdate>
-                            2016年12月21日 Wednesday
-                        </time>
-                        <a href="https://blog.dogame.cc/articles/2016-12-21/thinks-serverlog.html" rel="bookmark"><h1>关于从业以来服务端日志的若干历史问题的决议</h1></a>
-                    </header>
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:600,800" rel="stylesheet" type="text/css">
+  <link rel="shortcut icon" href="https://blog.dogame.cc/theme/images/logo.png">
 
-                    <section class="post-content">
-                        <div class="line-block">
+  <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/style.min.css?3c592a94">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+<meta name="keywords" content="">
+</head>
+<body>
+  <div class="container">
+    <div class="four columns sidebar">
+<nav>
+  <h1>Hi.</h1>
+  <a href="https://blog.dogame.cc/">
+    <img src="https://blog.dogame.cc/theme/images/logo.png" id="gravatar" alt="My photo"/>
+  </a>
+  <h2><a href="https://blog.dogame.cc/">I'm cupen<xcupen@gmail.com></a></h2>
+
+  <div id="bio">
+    <p></p>
+  </div>
+
+  <div id="social">
+Connect with me:
+<div id="stalker">
+
+</div>  </div>
+
+  <div id="tags">
+    <ul>
+      <li><a href="https://blog.dogame.cc/pages/about.html">关于</a></li>
+      <li><a href="https://blog.dogame.cc/pages/duo-ming-qing-dan.html">夺命清单</a></li>
+      <li><a href="http://evilbinary.org" target="_blank">鸭子<span style="font-size: 0.7em">&#8599;</span> </a></li>
+      </ul>
+  </div>
+</nav>    </div>
+
+    <div class="eleven columns content">
+  <p class="meta">
+    21 December 2016
+    <a href="/">
+      <i class="home fa fa-home"></i>
+    </a>
+  </p>
+
+  <h1 class="title"><a href="https://blog.dogame.cc/articles/2016-12-21/thinks-serverlog.html">关于从业以来服务端日志的若干历史问题的决议</a></h1>
+
+  <div class="article_text" id="post">
+    <div class="line-block">
 <div class="line">服务端日志，</div>
 <div class="line">既用于跟踪程序状态，</div>
 <div class="line">又用于数据分析，</div>
 <div class="line">是非常重要的战略物资。</div>
 <div class="line"><br /></div>
-<div class="line">我们要将之一个不漏滴，收集起来，</div>
-<div class="line">科学地、有规划地使用。</div>
+<div class="line">我们要将之一个不漏滴，</div>
+<div class="line">收集起来，</div>
+<div class="line">科学有规划的使用。</div>
 <div class="line"><br /></div>
 <div class="line-block">
-<div class="line">--胡教员</div>
+<div class="line">--我说的</div>
 </div>
 </div>
 <p>从一个游戏项目说起，上线伊始我们将日志记录在文件中，简单有效。随着日志增多，我们开始分类分日期存放。
-后来，由于增加了一些更复杂的游戏玩法，程序需要改用分布式架构分而治之。而日志也就此散落在不同机器上了,好在规模不大，还可以苟且一下。</p>
+后来，由于增加了一些更复杂的游戏玩法，程序需要改用分布式架构分而治之。而日志也就此散落在不同机器上了。好在规模不大，还可以苟且一下。</p>
 <p>再后来，游戏服务端开了上百个新服，日志散落得情况更加严重了。不光是查程序状态日志要苟且，连数据分析也
 开始乱套，聚合类统计压根无法进行，只能靠手工汇总来苟且，实在是凄惨。</p>
-<p>于是我们意识到一个中心化的日志收集服务管理起来更容易，但直接迁移到开源方案上没啥底气（主要是害怕日志
+<p>于是我意识到一个中心化的日志收集服务管理起来更容易，但直接迁移到开源方案上没啥底气（主要是害怕日志
 收集服务宕机丢日志）。只好折中，使用 rsync 将所有机器上的日志同步到一台高配机上集中处理(32核机干这种脏活………），
 简单易用，成果直观。但弊端也有，最先造成麻烦的是实时性。网上倒有 inotify 配合 rsync 的解决方案，见例子:</p>
 <div class="highlight"><pre><span></span><span class="k">while</span> true<span class="p">;</span> <span class="k">do</span>
@@ -84,55 +96,44 @@
 当然，实际发生的概率有多小，也许并不值得讨论，但总归看不太顺眼……</li>
 </ol>
 <p>综上，rsync 方案并没有多好，付出了很大代价（比如硬件资源、再比如我感到惭愧导致心理压力、还比如运维工作量）才换来分布式环境下日志中心化的局面。</p>
-<p>但无论如何，这个问题算是按下了，可其它问题却显得尖锐起来。比如我们检索程序状态日志要反复地 <cite>grep -P $regex</cite> 一堆纯文本，正则动不动就复杂到需要抄小本本。
-而数据分析方面，我们迫切需要日志能实时清洗落地到关系型数据库，通过 sql 查结果可以减少各种硬编码统计代码带来的混乱。我实现了配合 rsync 并通过 seek 文件读取位置来进行增量导入的中间过程，
+<p>但无论如何，这个问题算是按下了，可其它问题却显得尖锐起来。比如我们检索程序日志要反复 <cite>grep -P $regex</cite> 一堆纯文本，正则动不动就复杂到需要抄小本本。
+而数据分析方面，我们迫切需要日志能实时清洗落地到关系型数据库，通过 SQL 查结果可以减少各种硬编码统计代码带来的混乱。我实现了配合 rsync 并通过 seek 文件读取位置来进行增量导入的中间过程，
 跑起来还凑合，只是提供的接口跟 logstash 比起来还是丑了点，而且运维哥们工作上又多了个旁门左道的常驻进程要管理。</p>
-<p>还是得有更高生产力的日志收集方案才能支撑的更好啊。</p>
-<p>某日和杨百万吹水，偶然聊到日志传输的的问题，得知他们使用 Flume 来解决“丢日志”的问题。很有意思，每个产生日志的业务进程所在的机器都部署一个 Flume 实例，机器内的数据投递无需考虑网络问题，要挂也
-一块挂。而凡是到达 Flume 的日志则由 Flume 来保证必达，无需业务进程对此多做处理。至于重复投递的问题，还有待探究………… 再不济也不过沿用过去的土办法生产端加 ID，消费端做排重。</p>
+<p>还是得有更高生产力的日志收集方案才撑的住。</p>
+<p>某日和杨百万吹水，偶然聊到日志传输的的问题，得知他们使用 Flume 来解决“丢日志”的问题。很有意思，每个产生日志的业务机器上都部署一个 Flume 实例，机器内的消息投递无需考虑网络问题，要挂也
+一块挂。而凡是到达 Flume 的日志则由 Flume 来保证必达，无需业务进程对此多做处理。至于重试导致的重复问题，实现个有限时间内的 &quot;exactly-once delivery&quot; 就行。</p>
 <p>剩下的事，用 Kafka 做数据中转中心也就顺利成章了，其它小事比如：</p>
 <ul class="simple">
-<li>将程序状态跟踪日志输出倒 Elasticsearch 进行检索以取代 grep</li>
+<li>将日志输出到 ElasticSearch 进行检索以取代 grep</li>
 <li>将数据分析用的日志导入 PostgreSQL 做实时数据仓库（pgsql 的 OLAP 能力公认还是强于 mysql 的），用 SQL 做统计比硬编码方便太多，有不济的地方也能用 pandas/python 来补充。</li>
 </ul>
 <p>大事可期矣！</p>
-<div class="section" id="id2">
+<div class="section" id="section-2">
 <h2>后记</h2>
 <p>这篇水文整理自我个人的印象笔记里记录的一些七零八落的碎片，旨在留下点面包屑做指引，避免重复挖坑。从 2016年12月起动笔念头到现在 2018年3月才算落地完…… 跨度有点久。
 相信不止我一人有这种类似的经历，也肯定有人一开始就站在了我想要到达的地方。不过这都不重要了，我们应该着眼于当下，积极接纳更先进的生产力才是。</p>
 </div>
 
-                    </section>
-                    <hr/>
-                    <aside class="post-meta">
-                        <p>Category: <a href="https://blog.dogame.cc/category/articles.html">articles</a></p>
-                    </aside>
-                    <hr/>
+  </div>
 
-<div class="comments">
-    <div id="disqus_thread"></div>
-    <script>
-    /* See https://disqus.com/admin/install/platforms/universalcode/ */
-    var disqus_config = function () {
-        // this.page.url = 'articles/2016-12-21/thinks-serverlog.html';
-        this.page.identifier = 'articles/2016-12-21/thinks-serverlog.html';
-    };
-    
-    (function() { // DON'T EDIT BELOW THIS LINE
-    var d = document, s = d.createElement('script');
-    s.src = 'https://cupen.disqus.com/embed.js';
-    s.setAttribute('data-timestamp', +new Date());
-    (d.head || d.body).appendChild(s);
-    })();
-    </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-</div>
-                </article>
-            </li>
-        </ol>
+  <div class="article_meta related">
+    <h3>Category: </h3>
+    <span><a href="https://blog.dogame.cc/category/articles.html">articles</span>
+
+  </div>
+
+
+
+      <div class="footer">
+<div class="disclaimer">
+  
+    <p>
+      © cupen<xcupen@gmail.com>,  &mdash; built with <a href="http://getpelican.com" target="_blank">Pelican</a> using <a href="https://github.com/karambir/taman" target="_blank">Taman</a>, a port of jekyll theme <a href="https://github.com/swanson/lagom" target="_blank">Lagom</a>.
+    </p>
+  </div>      </div>
     </div>
-        </div>
+  </div>
 
-        <script src="https://blog.dogame.cc/theme/js/main.js"></script>
-    </body>
+
+</body>
 </html>
