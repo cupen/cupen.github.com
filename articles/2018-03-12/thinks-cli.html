@@ -65,19 +65,19 @@ Connect with me:
     <p>服务端程序实际运行时总会需要一些外部参数，一般情况读取固定路径的配置即可。但为了方便运维自由调整程序的运行姿势，得有个更灵活的配置方式。我尝试了使用 <a href="https://en.wikipedia.org/wiki/Command-line_interface">CLI</a> (Command-line interface) ，开发和运维用了都说好，大家一口气上五楼。</p>
 <p>用归用，但是否好用，不同的 CLI 实现的使用体验是不一样的。 <br>
 以下是我见过的几种:</p>
-<h2 id="library">Library<a class="headerlink" href="#library" title="Permanent link">&para;</a></h2>
+<h2 id="library">Library</h2>
 <p>朴实无华。按部就班提供诸如添加参数、子命令和参数类型转换之类的 API. 使用这些 API 构造出 parser 去解析命令行输入。</p>
 <ul>
 <li>Python <a href="https://docs.python.org/3/library/argparse.html">argpase</a></li>
 <li>C <a href="https://github.com/cofyc/argparse">argpase</a></li>
 <li>C <a href="https://www.gnu.org/software/libc/manual/html_node/Example-of-Getopt.html#Example-of-Getopt">getopt</a></li>
 </ul>
-<h2 id="dsl">DSL<a class="headerlink" href="#dsl" title="Permanent link">&para;</a></h2>
+<h2 id="dsl">DSL</h2>
 <p>有点潮，只需完整地写出 Help 文本（DSL 语法就是 Help 内容），其通过解析该文本来生成 parser。非常直观，不依赖任何语言特性，于是所有语言都能实现一致的体验，实际上也都实现了。但和 argparse 一样只是个 parser ，需要额外编码去调用具体的函数。</p>
 <ul>
 <li><a href="http://docopt.org/">docopt</a>  </li>
 </ul>
-<h2 id="_1">元编程<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<h2 id="_1">元编程</h2>
 <p>这一类的使用体验是最好的，只需实现函数本身，外加一点注解、注释就能自动生成 parser 和函数 binding。 比较依赖语言的特性，至少也得有反射机制才行。比如 Python 连注释(docstring)都能在运行时获得，于是就有 <a href="https://github.com/shmuelamar/cbox">cbox</a> 这样的实现。使用非常简单，我还给它加了子命令支持。</p>
 <ul>
 <li>Python <a href="https://github.com/shmuelamar/cbox">cbox</a></li>
