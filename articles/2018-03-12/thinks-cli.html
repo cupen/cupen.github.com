@@ -62,28 +62,67 @@ Connect with me:
   <h1 class="title"><a href="https://blog.dogame.cc/articles/2018-03-12/thinks-cli.html">给程序添加命令行接口（CLI）的一点体验</a></h1>
 
   <div class="article_text" id="post">
-    <p>程序实际运行时总会需要一些外部参数，一般情况下读取固定路径下的配置即可。但总有些参数需要灵活修改，以便让运维自由调整程序的运行姿势。普遍的做法是使用 <a href="https://en.wikipedia.org/wiki/Command-line_interface">CLI</a> (Command-line interface) ，开发和运维用了都说好，大家一口气上五楼。</p>
-<p>用归用，但是否好用，不同的 CLI 实现风格是不太一样的。 
-以下是我见过的几种</p>
-<h2>Library</h2>
-<p>普通的函数库。一般会提供【添加参数】、【添加子命令】这样的 api, 用于构造出 parser 来解析命令行参数。一般不提供【bind 到函数】之类的 api，需要人工编码处理。但其实做到这个份上已经足够了，剩下的事不是 parser 该做的。</p>
+    <p>服务端程序实际运行时总会需要一些外部参数，一般情况读取固定路径的配置即可。但为了方便运维自由调整程序的运行姿势，得有个更灵活的配置方式。我尝试了使用 <a href="https://en.wikipedia.org/wiki/Command-line_interface">CLI</a> (Command-line interface) ，开发和运维用了都说好，大家一口气上五楼。</p>
+<p>用归用，但是否好用，不同的 CLI 实现的使用体验是不一样的。 <br>
+以下是我见过的几种:</p>
+<h2 id="library">Library<a class="headerlink" href="#library" title="Permanent link">&para;</a></h2>
+<p>朴实无华。按部就班提供诸如添加参数、子命令和参数类型转换之类的 API. 使用这些 API 构造出 parser 去解析命令行输入。</p>
 <ul>
 <li>Python <a href="https://docs.python.org/3/library/argparse.html">argpase</a></li>
 <li>C <a href="https://github.com/cofyc/argparse">argpase</a></li>
 <li>C <a href="https://www.gnu.org/software/libc/manual/html_node/Example-of-Getopt.html#Example-of-Getopt">getopt</a></li>
 </ul>
-<h2>DSL</h2>
-<p>非常酷，只需要用纯文本完整地写出 Help 文本（这个 DSL 语法就是 Help 内容），其通过解析该文本来生成 parser。非常直观，不依赖任何语言特性，于是在所有语言里都能实现出一致的体验，实际上也都实现了…… 但和 argparse 一样只是个 parser ，需要另外编码去调用具体的函数。</p>
+<h2 id="dsl">DSL<a class="headerlink" href="#dsl" title="Permanent link">&para;</a></h2>
+<p>有点潮，只需完整地写出 Help 文本（DSL 语法就是 Help 内容），其通过解析该文本来生成 parser。非常直观，不依赖任何语言特性，于是所有语言都能实现一致的体验，实际上也都实现了。但和 argparse 一样只是个 parser ，需要额外编码去调用具体的函数。</p>
 <ul>
 <li><a href="http://docopt.org/">docopt</a>  </li>
 </ul>
-<h2>元编程</h2>
-<p>这一类的使用体验是最好的，只需实现函数本身，外加一点注释就能自动生成 parser 和函数 binding。 只是比较依赖语言的特性，至少也得有反射机制才行。比如 Python 连函数注释都能在运行时获得，于是就有了这个叫 [cbox] 的的项目。实现非常简单，我还给它加了子命令支持。</p>
+<h2 id="_1">元编程<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>这一类的使用体验是最好的，只需实现函数本身，外加一点注解、注释就能自动生成 parser 和函数 binding。 比较依赖语言的特性，至少也得有反射机制才行。比如 Python 连注释(docstring)都能在运行时获得，于是就有 <a href="https://github.com/shmuelamar/cbox">cbox</a> 这样的实现。使用非常简单，我还给它加了子命令支持。</p>
 <ul>
 <li>Python <a href="https://github.com/shmuelamar/cbox">cbox</a></li>
 <li>Python <a href="https://github.com/pallets/click">click</a></li>
 <li>Java <a href="http://picocli.info/">picocli</a></li>
 </ul>
+<p>附上 <a href="https://github.com/shmuelamar/cbox">cbox</a> 的子命令实现参考，来自我的 PR。<br>
+https://github.com/shmuelamar/cbox/pull/4  </p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">cbox</span>
+
+<span class="nd">@cbox</span><span class="o">.</span><span class="n">cmd</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;greets a person by its name.</span>
+
+<span class="sd">    :param name: the name of the person</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;hello name=</span><span class="si">{name}</span><span class="s1">!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="nb">locals</span><span class="p">()))</span>
+
+<span class="nd">@cbox</span><span class="o">.</span><span class="n">cmd</span>
+<span class="k">def</span> <span class="nf">world</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;greets a person by its name.</span>
+
+<span class="sd">    :param name: the name of the person</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;world name=</span><span class="si">{name}</span><span class="s1">!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="nb">locals</span><span class="p">()))</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">cbox</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">hello</span><span class="p">,</span> <span class="n">world</span><span class="p">])</span>
+</code></pre></div>
+
+<p>以上，表现力上佳。无需多余代码即可自动生成命令行接口.</p>
+<div class="highlight"><pre><span></span><code>$ python yourscript.py --help
+usage: subcommands.py <span class="o">[</span>-h<span class="o">]</span> <span class="o">{</span>hello,world<span class="o">}</span> ...
+
+which subcommand <span class="k">do</span> you want?
+
+optional arguments:
+  -h, --help     show this <span class="nb">help</span> message and <span class="nb">exit</span>
+
+subcommands:
+  <span class="o">{</span>hello,world<span class="o">}</span>
+    hello        greets a person by its name.
+    world        greets a person by its name.
+</code></pre></div>
+
 <p>完。</p>
   </div>
 
