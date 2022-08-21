@@ -64,9 +64,9 @@ Connect with me:
   <div class="article_text" id="post">
     <div class="section" id="section-2">
 <h2>前言</h2>
-<p>这篇水文只是对过去工作中某个问题的复盘和总结，描述了“请求-应答”式协议（就是 HTTP）的一种另类用法。
-尽管本文并不是吹 RPC 实现，但在全双工通信协议（如 TCP）中也有类似的用法，比如用 {方法标识 + 参数数据} 构成 TCP 数据流就能实现 RPC,
-你甚至还能通过加入更多标识来折腾出更多花样（比如跟踪请求栈），但这超出了这篇水文的吹扯范围。</p>
+<p>这篇水文只是我对过去工作中某个问题的复盘和总结，描述了“请求-应答”式协议的另类用法。
+尽管本文并不是聊 RPC 实现，但原理相似，比如用 {<strong>方法标识</strong> + <strong>参数数据</strong>} 构造 TCP 字节流即可。
+甚至可以折腾出更多花样，比如加入请求标识就能跟踪请求栈，但这超出了本文讨论范围。</p>
 </div>
 <div class="section" id="section-3">
 <h2>正文</h2>
@@ -74,77 +74,80 @@ Connect with me:
 先描述一个普通 web 应用的运作流程( 不要在意细节 ;b )</p>
 <ol class="arabic simple">
 <li>Client 向 Server 发出请求;</li>
-<li>Server 收到请求，处理并返回应答;</li>
-<li>Client 收到应答，解读;</li>
+<li>Server 收到请求，处理并发回应答;</li>
+<li>Client 收到应答，解读并产生反馈;</li>
 </ol>
-<p>普通 web 应用的运作过程就是不断地重复以上步骤。这有点像我们人与人之间对话的过程，我将之拟人化也毫不违和：</p>
-<ol class="arabic simple">
-<li>Client 君向 Server 君提问;</li>
-<li>Server 君回答 Client 君;</li>
-<li>Client 君收到回答，并根据答案做出反应;</li>
-</ol>
-<p>奈何程序员能力有限，还无法让 Client 与 Server 如人一样用自然语言对话。他们只能为 Client 和 Server 立一个约定，这个约定
-定义了 Client 与 Server 之间传递的各项数据的含义。Server 按约定来提供数据，Client 按约定来解读数据。至于数据的格式，属
-于题外话。</p>
-<blockquote>
-（题外话：二进制如 Msgpack, Protocol buffers 等等，可读文本如 JSON, XML, 甚至是脚本语言源码（如 JavaScript））</blockquote>
+<p>普通 web 应用的运作过程就是不断地重复以上步骤。这有点像我们人与人之间对话的过程。
+但奈何程序员能力有限，还无法让 Client 与 Server 如人一样用自然语言对话。双方需要建立一些约定，按约定
+来定义 Client 与 Server 之间传递的各项数据的含义。至于数据格式，得另立话题。</p>
+<pre class="doctest-block">
+&gt;&gt;&gt; 数据格式种类繁多，二进制如 MsgPack, Protobuf ，文本如 JSON, XML。
+</pre>
 <p>如此，项目一开始程序员们分分钟就约定好了数据的含义：“接口 A 返回数据 dataA，接口 B 返回数据 dataB……”。Client 和 Server
 轻松快乐地进行着“你问我答”，程序员们便安心回家睡觉觉了，皆大欢喜……</p>
-<p>意淫结束，游戏毕竟不同于普通 web 应用，Client 与 Server 之间存在频繁的交互，大量的接口，却重复交换着有限的几坨数据，来来去去就是些玩家属性、玩家钱包、玩家背包、怪物属性 blahblah……
-这里 用 JSON 举个例子，数据来自商店购买接口：</p>
+<p>意淫结束。游戏毕竟不同于 web 应用，Client 与 Server 之间存在频繁交互，大量的接口，却重复交换着有限的几坨数据，来来去去就是些玩家属性、装备、钱包、背包 blahblah……
+用 JSON 举个例子，数据来自商店购买接口：</p>
 <div class="highlight"><pre><span></span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;_code_&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;var1&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;var2&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;sub_var2&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;shit&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;coin&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-100</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;gold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="s2">&quot;equip&quot;</span><span class="w"> </span><span class="mi">10086</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;coin&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;gold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;income&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">        </span><span class="s2">&quot;equip-10001-1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="s2">&quot;equip-10002-1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="s2">&quot;prop-20001-10&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">]</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </pre></div>
-<p>你可能会鄙视我：“雀，这还不简单！我用脚趾头就能摆平嘛！”，且容我解释下，这个例子是简化过的，并且别的接口比如刷副本掉落、PVP砍人掉落、奖品兑换、活动奖励
-等等都他喵会返回类似的数据。不止如此，说不准哪天策划一拍大腿，还会多几种货币或者背包资源类型。</p>
-<p>现在可以看出问题了吧？主要就两点：</p>
+<p>coin, gold 代表钱包，income 代表获得物品。有着类似数据约定的接口有很多，如副本结算、奖品兑换、PVP奖励、活动奖励等等。
+不止如此，说不准哪天策划一拍脑门，还会多几种货币或物品类型。</p>
+<p>现在面临的问题很清晰了，就两点：</p>
 <ol class="arabic simple">
-<li>数据含义的约定难以复用。多个接口返回的数据中都包含了 dataX，可怜的客户端没完没了地在不同的上下文处理同样的数据。</li>
-<li>数据含义的约定与提供数据的 Server 接口绑死。于是 Server 接口 A 必须返回约定好的 dataA, 不能是 dataB, 否则霹雳啪啪轰隆
-咔咔出事故扣工资卷铺盖。当然，你也可以约定好接口 A 会返回 dataA 或 dataB, 但这又回到问题&quot;1&quot;了。</li>
+<li>数据的约定难以复用。客户端需要在在不同的上下文处理同样的数据，没完没了。</li>
+<li>数据的约定与 Server 接口绑死。一旦需求变化导致 Server 接口需要返回更多数据，又需要重新约定一次。而又因为问题 1 的存在，还会导致更多修改。</li>
 </ol>
-<p>玩命领加班费很没意思，是时候加一丁点设计了。我给每个数据集合加入唯一标识（非绝对唯一，仅让不同数据集合的标识唯一即可），而数据含义则围绕着唯一标
-识来进行约定，Client 根据这个唯一标识来处理对应的数据集合。如此，每个数据集合都通过唯一标识来区分，只要 Server 接口返回了带有
-这个唯一标识的数据集合，Client 都能根据唯一标识来正确解读，并且客户端只需要实现一次。</p>
-<p>仍然使用 JSON 描述改良后的数据：</p>
+<p>玩命领加班费很没意思，是时候加点设计。我给每个数据集合加入唯一标识（非绝对唯一，仅用于区分不同数据集合），Server 根据唯一标识提供数据，Client 则根据唯一标
+识来解读。如此，Server 可以在一次响应里返回多个数据集合，而 Client 都能正确解读，且只需实现一次。至此，这个应用层协议便有了雏形。</p>
+<p>仍然用 JSON 描述改良后的数据(不代表具体实现）：</p>
 <div class="highlight"><pre><span></span><span class="p">[</span><span class="w"></span>
 <span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="err">当前接口的返回状态</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;_code_&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;var1&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;var2&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;sub_var2&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;shit&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;_code_&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
 <span class="w">    </span><span class="p">},</span><span class="w"></span>
 <span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="err">玩家钱包状态变化</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;_msgtype_&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;money&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;coin&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-100</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;gold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;_msgid_&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;money&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;coin&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;gold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 <span class="w">    </span><span class="p">},</span><span class="w"></span>
 <span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="err">玩家背包状态变化</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;_msgtype_&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bag&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;equip&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10086</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;_msgid_&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bag&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;income&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">            </span><span class="s2">&quot;equip-10001-1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="s2">&quot;equip-10002-1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="s2">&quot;prop-20001-10&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">]</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
 <span class="p">]</span><span class="w"></span>
 </pre></div>
-<p>客户端现在只需要根据 <cite>_msgtype_</cite> 绑定到不同的方法上即可，细节不表。现在处理服务端的响应就会容易得多了。比如这样：</p>
-<div class="highlight"><pre><span></span><span class="n">GameResponse</span><span class="w"> </span><span class="n">resp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gameserver</span><span class="p">.</span><span class="na">methodXX</span><span class="p">();</span><span class="w"></span>
-<span class="n">player</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">resp</span><span class="p">.</span><span class="na">msgs</span><span class="p">);</span><span class="w">  </span><span class="c1">// 同步状态</span><span class="w"></span>
-<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">resp</span><span class="p">.</span><span class="na">isOK</span><span class="p">()){</span><span class="w"></span>
-<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="n">Shit</span><span class="p">(</span><span class="n">resp</span><span class="p">);</span><span class="w"></span>
+<p>Client 只需根据 <cite>_msgid_</cite> 绑定到不同的方法上即可，细节不表。现在处理服务端的响应就会容易得多，比如这样：</p>
+<div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">buyShopItems</span><span class="p">(</span><span class="n">string</span><span class="w"> </span><span class="n">shopId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">GameResponse</span><span class="w"> </span><span class="n">resp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="na">gameserver</span><span class="p">.</span><span class="na">buyShopItem</span><span class="p">(</span><span class="n">shopId</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">resp</span><span class="p">.</span><span class="na">msgs</span><span class="p">);</span><span class="w">  </span><span class="c1">// 同步状态</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">resp</span><span class="p">.</span><span class="na">isOK</span><span class="p">()){</span><span class="w"></span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">OperateFail</span><span class="p">(</span><span class="n">resp</span><span class="p">.</span><span class="na">Code</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">showNewItem</span><span class="p">(</span><span class="n">resp</span><span class="p">.</span><span class="na">msgs</span><span class="p">.</span><span class="na">bag</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// do game blahblah……</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="p">;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-<span class="c1">// blahblah……</span><span class="w"></span>
-<span class="k">return</span><span class="p">;</span><span class="w"></span>
+
+<span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="n">StateChange</span><span class="w"> </span><span class="n">states</span><span class="o">[]</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">StateChange</span><span class="w"> </span><span class="n">s</span><span class="p">:</span><span class="w"> </span><span class="n">states</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">MsgHandler</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="na">player</span><span class="p">.</span><span class="na">getHandler</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="na">msgid</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">h</span><span class="p">(</span><span class="n">changes</span><span class="p">)</span><span class="w"> </span><span class="c1">// 根据 _msgid_ 执行具体的方法</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 <p>如此这般，开发起来会顺手不少。</p>
 <p>完。</p>
