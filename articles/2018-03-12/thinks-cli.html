@@ -62,11 +62,10 @@ Connect with me:
   <h1 class="title"><a href="https://blog.dogame.cc/articles/2018-03-12/thinks-cli.html">给程序添加命令行接口（CLI）的一点体验</a></h1>
 
   <div class="article_text" id="post">
-    <p>服务端程序实际运行时总会需要一些外部参数，一般情况读取固定路径的配置即可。但为了方便运维自由调整程序的运行姿势，得有个更灵活的配置方式。我尝试了使用 <a href="https://en.wikipedia.org/wiki/Command-line_interface">CLI</a> (Command-line interface) ，开发和运维用了都说好，大家一口气上五楼。</p>
-<p>用归用，但是否好用，不同的 CLI 实现的使用体验是不一样的。 <br>
-以下是我见过的几种:</p>
+    <p>服务端程序实际运行时总会需要一些外部参数，一般情况下读取固定路径的配置即可。但有时候运维需要自由调整程序的运行姿势，需要灵活一点的配置方式。我尝试了下 <a href="https://en.wikipedia.org/wiki/Command-line_interface">CLI</a> (Command-line interface) ，开发和运维用了都说好，大家一口气上五楼。</p>
+<p>大家用着是爽了，但我实现起来总有些磕碰，遂忍不住多尝试了几种方案。  </p>
 <h2 id="library">Library</h2>
-<p>朴实无华。按部就班提供诸如添加参数、子命令和参数类型转换之类的 API. 使用这些 API 构造出 parser 去解析命令行输入。</p>
+<p>没啥特点，只按部就班提供诸如添加参数、子命令和参数类型转换之类的 API. 使用这些 API 构造出 parser 去解析命令行输入。</p>
 <ul>
 <li>Python <a href="https://docs.python.org/3/library/argparse.html">argpase</a></li>
 <li>C <a href="https://github.com/cofyc/argparse">argpase</a></li>
@@ -110,7 +109,7 @@ https://github.com/shmuelamar/cbox/pull/4  </p>
     <span class="n">cbox</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">hello</span><span class="p">,</span> <span class="n">world</span><span class="p">])</span>
 </code></pre></div>
 
-<p>以上，战斗力爆表！无需多余代码即可自动生成命令行接口。</p>
+<p>以上，表现力绝赞！无需多余代码即可自动生成命令行接口。</p>
 <div class="highlight"><pre><span></span><code>$ python yourscript.py --help
 usage: subcommands.py <span class="o">[</span>-h<span class="o">]</span> <span class="o">{</span>hello,world<span class="o">}</span> ...
 
