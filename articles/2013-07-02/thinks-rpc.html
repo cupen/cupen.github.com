@@ -65,7 +65,7 @@ Connect with me:
     <div class="section" id="section-2">
 <h2>前言</h2>
 <p>这篇水文只是我对过去工作中某个问题的复盘和总结，描述了“请求-应答”式协议的另类用法。
-尽管本文并不是聊 RPC 实现，但原理相似，比如用 {<strong>方法标识</strong> + <strong>参数数据</strong>} 构造 TCP 字节流即可。
+尽管本文并不是吹 RPC 实现，但原理是一样，比如用 {<strong>方法标识</strong> + <strong>参数数据</strong>} 构造 TCP 字节流即可。
 甚至可以折腾出更多花样，比如加入请求标识就能跟踪请求栈，但这超出了本文讨论范围。</p>
 </div>
 <div class="section" id="section-3">
@@ -78,50 +78,47 @@ Connect with me:
 <li>Client 收到应答，解读并产生反馈;</li>
 </ol>
 <p>普通 web 应用的运作过程就是不断地重复以上步骤。这有点像我们人与人之间对话的过程。
-但奈何程序员能力有限，还无法让 Client 与 Server 如人一样用自然语言对话。双方需要建立一些约定，按约定
-来定义 Client 与 Server 之间传递的各项数据的含义。至于数据格式，得另立话题。</p>
+但奈何程序员能力有限，还无法让 Client 与 Server 如人一样用自然语言对话。
+双方需要建立一些约定，以决定 Client 和 Server 之间传递的各项数据的含义。格式问题可以另立话题。</p>
 <pre class="doctest-block">
 &gt;&gt;&gt; 数据格式种类繁多，二进制如 MsgPack, Protobuf ，文本如 JSON, XML。
 </pre>
 <p>如此，项目一开始程序员们分分钟就约定好了数据的含义：“接口 A 返回数据 dataA，接口 B 返回数据 dataB……”。Client 和 Server
 轻松快乐地进行着“你问我答”，程序员们便安心回家睡觉觉了，皆大欢喜……</p>
-<p>意淫结束。游戏毕竟不同于 web 应用，Client 与 Server 之间存在频繁交互，大量的接口，却重复交换着有限的几坨数据，来来去去就是些玩家属性、装备、钱包、背包 blahblah……
+<p>意淫结束。游戏毕竟不同于 web 应用，Client 与 Server 之间存在频繁交互，大量的接口，却重复交换着有限的几坨数据。来来去去就是些玩家属性、装备、钱包、背包 blahblah……
 用 JSON 举个例子，数据来自商店购买接口：</p>
 <div class="highlight"><pre><span></span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;_code_&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;coin&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;gold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;income&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;_code_&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">操作码</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;coin&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="err">#</span><span class="w"> </span><span class="err">银币</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;gold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="err">金币</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;income&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">   </span><span class="err">#</span><span class="w"> </span><span class="err">获得收益</span><span class="w"></span>
 <span class="w">        </span><span class="s2">&quot;equip-10001-1&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="s2">&quot;equip-10002-1&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="s2">&quot;prop-20001-10&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="p">]</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </pre></div>
-<p>coin, gold 代表钱包，income 代表获得物品。有着类似数据约定的接口有很多，如副本结算、奖品兑换、PVP奖励、活动奖励等等。
+<p>有着类似数据约定的接口有很多，如副本结算、奖品兑换、PVP奖励、活动奖励等等。
 不止如此，说不准哪天策划一拍脑门，还会多几种货币或物品类型。</p>
 <p>现在面临的问题很清晰了，就两点：</p>
 <ol class="arabic simple">
-<li>数据的约定难以复用。客户端需要在在不同的上下文处理同样的数据，没完没了。</li>
-<li>数据的约定与 Server 接口绑死。一旦需求变化导致 Server 接口需要返回更多数据，又需要重新约定一次。而又因为问题 1 的存在，还会导致更多修改。</li>
+<li>数据约定难以复用。客户端需要在在不同的上下文处理同样的数据，没完没了。</li>
+<li>数据约定与 Server 接口绑死。一旦需求变化导致 Server 接口需要返回更多数据，又需要重新约定一次。而又因为问题 1 的存在，还会导致更多修改。</li>
 </ol>
 <p>玩命领加班费很没意思，是时候加点设计。我给每个数据集合加入唯一标识（非绝对唯一，仅用于区分不同数据集合），Server 根据唯一标识提供数据，Client 则根据唯一标
-识来解读。如此，Server 可以在一次响应里返回多个数据集合，而 Client 都能正确解读，且只需实现一次。至此，这个应用层协议便有了雏形。</p>
+识来解读。如此，Server 可以在一次响应里返回多个数据集合，而 Client 都能正确解读，且只需实现一次。至此，这个另类的应用层协议便有了雏形。</p>
 <p>仍然用 JSON 描述改良后的数据(不代表具体实现）：</p>
 <div class="highlight"><pre><span></span><span class="p">[</span><span class="w"></span>
-<span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="err">当前接口的返回状态</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;_code_&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;_code_&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">          </span><span class="err">#</span><span class="w"> </span><span class="err">当前接口的返回状态</span><span class="w"></span>
 <span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="err">玩家钱包状态变化</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;_msgid_&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;money&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;_msgid_&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;money&quot;</span><span class="p">,</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">玩家钱包状态变化</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;coin&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;gold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 <span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="err">玩家背包状态变化</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;_msgid_&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bag&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;_msgid_&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bag&quot;</span><span class="p">,</span><span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="err">玩家背包状态变化</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;income&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
 <span class="w">            </span><span class="s2">&quot;equip-10001-1&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">            </span><span class="s2">&quot;equip-10002-1&quot;</span><span class="p">,</span><span class="w"></span>
