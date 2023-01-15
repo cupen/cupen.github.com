@@ -65,21 +65,21 @@ Connect with me:
     <div class="section" id="section-2">
 <h2>前言</h2>
 <p>这篇水文只是我对过去工作中某个问题的复盘和总结，描述了“请求-应答”式协议的另类用法。
-尽管本文并不是吹 RPC 实现，但原理类似，比如用 {<strong>方法标识</strong> + <strong>参数数据</strong>} 构造 TCP 字节流即可。
-甚至可以折腾出更多花样，比如加入请求标识就能跟踪请求栈，但这超出了本文讨论范围。</p>
+尽管本文并不是吹 RPC 实现，但原理与其类似，比如用 {<strong>方法标识</strong> + <strong>参数数据</strong>} 构造 TCP 字节流即可。
+甚至可以有更多花样，比如加入请求标识就能跟踪请求栈，但这超出了本文讨论范围。</p>
 </div>
 <div class="section" id="section-3">
 <h2>正文</h2>
-<p>本想法的应用场景仅限于“请求-应答”式的数据交换方式下（如 HTTP）。
-先描述一个普通 web 应用的运作流程( 不要在意细节 ;b )</p>
+<p>本水文描述的应用场景仅限于“请求-应答”式的数据交换方式下（如 HTTP）。
+例如一个普通 web 应用的运作流程( 不要在意细节 ;b )</p>
 <ol class="arabic simple">
 <li>Client 向 Server 发出请求;</li>
 <li>Server 收到请求，处理并发回应答;</li>
-<li>Client 收到应答，解读并产生反馈;</li>
+<li>Client 收到应答，并反馈给用户;</li>
 </ol>
 <p>普通 web 应用的运作过程就是不断地重复以上步骤。这有点像我们人与人之间对话的过程。
-但奈何程序员能力有限，还无法让 Client 与 Server 如人一样用自然语言对话。
-双方需要建立一些约定，以决定 Client 和 Server 之间传递的各项数据的含义。</p>
+但奈何程序员能力有限，还无法让 Client 与 Server 如人一样自然对话。
+双方需要约定 Client 和 Server 之间传递的各项数据的含义。</p>
 <pre class="literal-block">
 数据格式种类繁多，二进制如 MsgPack, Protobuf ，文本如 JSON, XML，可以另起话题。
 </pre>
@@ -100,10 +100,10 @@ Connect with me:
 </pre></div>
 <p>有着类似数据约定的接口有很多，如副本结算、奖品兑换、PVP奖励、活动奖励等等。
 不止如此，说不准哪天策划一拍脑门，还会多几种货币或物品类型。</p>
-<p>现在面临的问题很清晰了，就两点：</p>
+<p>现在面临的问题很清楚了，有两点：</p>
 <ol class="arabic simple">
-<li>数据约定难以复用。客户端需要在在不同的上下文处理同样的数据，没完没了。</li>
-<li>数据约定与 Server 接口绑死。一旦需求变化导致 Server 接口需要返回更多数据，又需要重新约定一次。而又因为问题 1 的存在，还会导致更多修改。</li>
+<li>数据约定难以复用。客户端需要在在不同的上下文处理同样的数据。</li>
+<li>数据约定与 Server 接口绑死。一旦需求变化，又得重新约定。而因为问题 1 的存在，还会导致更多修改。</li>
 </ol>
 <p>玩命领加班费很没意思，是时候加点设计。我给每个数据集合加入唯一标识（非绝对唯一，仅用于区分不同数据集合），Server 根据唯一标识提供数据，Client 则根据唯一标
 识来解读。如此，Server 可以在一次响应里返回多个数据集合，而 Client 都能正确解读，且只需实现一次。至此，这个另类的应用层协议便有了雏形。</p>
@@ -130,16 +130,16 @@ Connect with me:
 <p>Client 只需根据 <cite>_msgid_</cite> 绑定到不同的方法上即可，细节不表。现在处理服务端的响应就会容易得多，比如这样：</p>
 <div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">buyShopItems</span><span class="p">(</span><span class="n">string</span><span class="w"> </span><span class="n">shopId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="n">GameResponse</span><span class="w"> </span><span class="n">resp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="na">gameserver</span><span class="p">.</span><span class="na">buyShopItem</span><span class="p">(</span><span class="n">shopId</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">resp</span><span class="p">.</span><span class="na">msgs</span><span class="p">);</span><span class="w">  </span><span class="c1">// 同步状态</span><span class="w"></span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">resp</span><span class="p">.</span><span class="na">isOK</span><span class="p">()){</span><span class="w"></span>
 <span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">OperateFail</span><span class="p">(</span><span class="n">resp</span><span class="p">.</span><span class="na">Code</span><span class="p">);</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">saveStates</span><span class="p">(</span><span class="n">resp</span><span class="p">.</span><span class="na">msgs</span><span class="p">);</span><span class="w">  </span><span class="c1">// 同步状态</span><span class="w"></span>
 <span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">showNewItem</span><span class="p">(</span><span class="n">resp</span><span class="p">.</span><span class="na">msgs</span><span class="p">.</span><span class="na">bag</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="c1">// do game blahblah……</span><span class="w"></span>
 <span class="w">    </span><span class="k">return</span><span class="p">;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 
-<span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="n">StateChange</span><span class="w"> </span><span class="n">states</span><span class="o">[]</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">saveStates</span><span class="p">(</span><span class="n">StateChange</span><span class="w"> </span><span class="n">states</span><span class="o">[]</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">StateChange</span><span class="w"> </span><span class="n">s</span><span class="p">:</span><span class="w"> </span><span class="n">states</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="n">MsgHandler</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="na">player</span><span class="p">.</span><span class="na">getHandler</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="na">msgid</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="n">h</span><span class="p">(</span><span class="n">changes</span><span class="p">)</span><span class="w"> </span><span class="c1">// 根据 _msgid_ 执行具体的方法</span><span class="w"></span>
