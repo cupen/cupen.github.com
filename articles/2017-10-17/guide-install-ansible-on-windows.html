@@ -28,7 +28,7 @@
 <nav>
   <h1>Hi.</h1>
   <a href="https://blog.dogame.cc/">
-    <img src="https://blog.dogame.cc/theme/images/logo.png" id="gravatar" alt="My photo"/>
+    <img src="https://blog.dogame.cc/images/avatar.jpg" id="gravatar" alt="My photo"/>
   </a>
   <h2><a href="https://blog.dogame.cc/">I'm cupen<xcupen@gmail.com></a></h2>
 
@@ -114,8 +114,8 @@ Connect with me:
 
   <div class="article_text" id="post">
     <p>尽管 ansible 官方不支持 Windows，但 Windows 上的一些 POSIX 兼容环境是可以的，这里记录下使用 msys2 环境安装 ansible 的过程。msys2 是基于 cygwin 开发的，用法与其相似。</p>
-<p>通常来说，直接执行 <code>pip2 install ansible</code> 即可, 但由于一些依赖（准确说是依赖的依赖）包含需要编译的 C 代码，加上 msys2 并不能完全无修改地编译一些专为 *nix 写的 C 代码，导致在安装 ansible 前需要一点小折腾。顺带吐槽下，即便是官方支持的 *nix 环境，也不是 100%  就能免于折腾，这是 C 的工程特(Wen)性(Ti)决定的。</p>
-<p>下面开始苦痛之旅。  </p>
+<p>通常来说，直接执行 <code>pip2 install ansible</code> 即可, 但由于一些依赖（准确说是依赖的依赖）包含一些专为 *nix 系统开发的 C 代码，导致在安装 ansible 前需要一点小折腾。顺带吐槽下，即使在 *nix 下，也不是 100% 免于折腾，这是 C 的工程特(Wen)性(Ti)决定的。</p>
+<p>下面开始痛苦之旅。  </p>
 <h2 id="python2-cc">安装 python2 环境 和 C/C++ 编译环境</h2>
 <div class="highlight"><pre><span></span><code>pacman -S python2 python2-pip --noconfirm
 pacman -S base-devel --noconfirm
@@ -148,8 +148,8 @@ Failed to connect to new control master
 
 <p>可参考:<br>
 <a href="https://github.com/ansible/ansible/issues/6363">https://github.com/ansible/ansible/issues/6363</a><br>
-至于 ansible 开发者说的 <code>Ansible doesn't support running from cygwin.</code>，翻译下就是“哥没空支持旁门左道平台”。
-不鸟他，继续我们的苦痛之旅。<br>
+至于 ansible 开发者说的 <code>Ansible doesn't support running from cygwin.</code>，意译下就是“哥没空支持旁门左道的平台”。
+我们不鸟他，继续痛苦之旅。<br>
 修改 <code>/etc/ansible/ansible.cfg</code></p>
 <div class="highlight"><pre><span></span><code><span class="k">[ssh_connection]</span><span class="w"></span>
 <span class="na">ssh_args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-o ControlMaster=no -o ControlPersist=60s</span><span class="w"></span>
