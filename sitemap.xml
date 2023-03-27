@@ -5,35 +5,35 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>https://blog.dogame.cc/</loc>
-<lastmod>2023-03-27T23:29:38-00:00</lastmod>
+<lastmod>2023-03-27T23:57:38-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>https://blog.dogame.cc/tags.html</loc>
-<lastmod>2023-03-27T23:29:38-00:00</lastmod>
+<lastmod>2023-03-27T23:57:38-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>https://blog.dogame.cc/categories.html</loc>
-<lastmod>2023-03-27T23:29:38-00:00</lastmod>
+<lastmod>2023-03-27T23:57:38-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>https://blog.dogame.cc/authors.html</loc>
-<lastmod>2023-03-27T23:29:38-00:00</lastmod>
+<lastmod>2023-03-27T23:57:38-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>https://blog.dogame.cc/archives.html</loc>
-<lastmod>2023-03-27T23:29:38-00:00</lastmod>
+<lastmod>2023-03-27T23:57:38-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -46,8 +46,15 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>https://blog.dogame.cc/pages/duo-ming-qing-dan.html</loc>
+<loc>https://blog.dogame.cc/pages/plans.html</loc>
 <lastmod>2013-04-02T02:22:39+08:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>https://blog.dogame.cc/pages/wiki.html</loc>
+<lastmod>2023-03-27T23:44:35+08:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.5</priority>
 </url>
