@@ -189,7 +189,7 @@ deactivate agent
   这个实现长度在 12 字节，实际使用时可以用 hex string。<br>
 <a href="https://www.mongodb.com/docs/manual/reference/method/ObjectId/">https://www.mongodb.com/docs/manual/reference/method/ObjectId/</a><br>
   &nbsp;  <br>
-  简单说就是 4 字节 unix 绝对时间戳（秒） + 5 字节随机数 + 3 字节计数器<br>
+  4 字节 unix 绝对时间戳（秒） + 5 字节随机数 + 3 字节计数器<br>
   算法性能每秒 2^24 个 UID，就是 1600w/sec. <br>
   但由于随机数的缘故，在多进程环境下可能会有重复，理论上是 (进程数-1) / (2^40) 的概率，大约万亿分之几吧。 <br>
   &nbsp;  <br>
