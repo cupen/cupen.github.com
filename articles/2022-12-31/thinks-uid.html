@@ -123,7 +123,7 @@ Connect with me:
 <p>我这几年工作中常常会用到 UID ，虽有不少开源实现，但在不同场合使用哪种方案总免不了计较下。因此我决定写一篇吹水文做点浅薄介绍，以便向人解释我的思路时能更从容些。  </p>
 <p>UID (Unique identifier) 顾名思义是一种唯一性 ID，但区别于 GUID/UUID ，它只是有限范围内唯一。
 比如在游戏场景里，玩家ID、野怪ID、对局ID 等等会用各自的 UID 算法实现，因为有对象类型（不同上下文）做区分，所以跨对象类型重复是无所谓的。</p>
-<p>下面的代码展示了一个最原始的 UID 实现（别笑，高级算法无非就是分布式计数）。</p>
+<p>下面的代码展示了一个最原始的 UID 实现（别笑，高级算法无非就是分布式计数器）。</p>
 <div class="highlight"><pre><span></span><code><span class="kd">var</span><span class="w"> </span><span class="nx">countor</span><span class="w"> </span><span class="kt">uint32</span><span class="w"></span>
 <span class="kd">func</span><span class="w"> </span><span class="nx">NextId</span><span class="p">()</span><span class="w"> </span><span class="kt">uint32</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">atomic</span><span class="p">.</span><span class="nx">AddUint32</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">countor</span><span class="p">)</span><span class="w"></span>
