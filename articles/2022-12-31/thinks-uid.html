@@ -157,11 +157,11 @@ deactivate agent
 
 <p><img src="https://www.plantuml.com/plantuml/svg/SoWkIImgAStDuIe0qfd9cGM9UIKAIazsp7hQjV35_jdFLtGhAIGMAnIWoeTwkYWufgVcbO0b4q4iL0KkYIM9IOd5gM3vb2G5Bgx4v9BCiiIIL91H2hfs2WNQsbOApnOtF9k_zDcSDK_dR500clbiuuBtUtgUJrdnTCFUfvszJ_kxdatVzcBXqgUjhM1T4Aki55xqRN_QF-tPj0tFPxM0z3tjsVLo-XQkb5I4BGWR8PfG9S52S0D1JddQqVQojHTX64m9K4rA4j2bFOrFThO-xPa6DGTXCAO0bqDgNWemJ040"/></p>
 <p>另一种则是在 UID 里加入节点 ID 和时间戳，其中节点 ID 用来保证跨进程唯一，而时间戳则保证进程重启后继续唯一。
-以下是参考。  </p>
+以下是参考。 </p>
 <ul>
 <li>
-<p>snowflake<br>
-  最早的实现，由 twitter 提出，是为全局有序（k-sorted）开发的 int64 UID 算法。<br>
+<p>Snowflake<br>
+  最早的实现，由 Twitter 提出，是为全局有序（k-sorted）开发的 int64 UID 算法。<br>
 <a href="https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake">https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake</a><br>
   文中给出了 <a href="https://github.com/twitter-archive/snowflake/blob/snowflake-2010/src/main/scala/com/twitter/service/snowflake/IdWorker.scala">Scala实现</a>，
   也可参考 <a href="https://en.wikipedia.org/wiki/Snowflake_ID">Wiki说明</a> : <br>
@@ -169,16 +169,16 @@ deactivate agent
   1 bit 保留<br>
   41 bits 相对时间戳（毫秒），2^41 毫秒大约是 69 年，这之后会溢出导致重复。  <br>
   10 bits 节点 ID，最多 1024 个节点。<br>
-  12 bits 计数器。<br>
+  12 bits 计数器。 SS
   算法性能每毫秒 2^12 个 UID，大约是 409w/sec.</p>
 </li>
 <li>
-<p>sonyflake<br>
+<p>Sonyflake<br>
   索尼大法是 snowflake 的变种 <br>
 <a href="https://github.com/sony/sonyflake">https://github.com/sony/sonyflake</a>  <br>
   &nbsp;  <br>
   39 bits 相对时间戳（以10毫秒为单位），相当于 174年。<br>
-  8 bits 计数器。  <br>
+  8  bits 计数器。  <br>
   16 bits 节点 ID。<br>
   算法性能每 10 毫秒 2^8 个 UID，大约是 2.5w/sec. <br>
   但我实测跑出了 5w 的成绩…… = =! 等我有空再跟。<br>
@@ -187,27 +187,27 @@ deactivate agent
 <li>
 <p>MongoDB ObjectId<br>
   这个实现长度在 12 字节，实际使用时可以用 hex string。<br>
-  参考：<a href="https://www.mongodb.com/docs/manual/reference/method/ObjectId/">https://www.mongodb.com/docs/manual/reference/method/ObjectId/</a><br>
+<a href="https://www.mongodb.com/docs/manual/reference/method/ObjectId/">https://www.mongodb.com/docs/manual/reference/method/ObjectId/</a><br>
   &nbsp;  <br>
   简单说就是 4 字节 unix 绝对时间戳（秒） + 5 字节随机数 + 3 字节计数器<br>
   算法性能每秒 2^24 个 UID，就是 1600w/sec. <br>
   但由于随机数的缘故，在多进程环境下可能会有重复，理论上是 (进程数-1) / (2^40) 的概率，大约万亿分之几吧。 <br>
   &nbsp;  <br>
-  另外说明下，该算法还有一种实现。  <br>
+  另外，该算法还有一种实现。  <br>
   参考 mgo(mongodb driver) 的<a href="https://www.mongodb.com/docs/v3.0/reference/bson-types/#objectid">旧版 ObjectId 算法</a>。<br>
-  其与最新算法不同之处在于 5 字节随机数改由 3 字节随机数 + 2 字节进程 ID，这可以保证同一台主机里多进程生成的 ID 绝对唯一。但在容器环境下进程 ID 可能会重复，结果可能更杯具。 <br>
+  其与最新算法不同之处在于 5 字节随机数改由 3 字节随机数 + 2 字节进程 ID，这可以保证同一台主机里多进程生成的 ID 绝对唯一。但在容器环境下，由于进程 ID 可能会重复，结果可能更杯具。 <br>
 <a href="https://github.com/globalsign/mgo/blob/eeefdecb41b842af6dc652aaea4026e8403e62df/bson/bson.go#L266-L283">https://github.com/globalsign/mgo/blob/eeefdecb41b842af6dc652aaea4026e8403e62df/bson/bson.go#L266-L283</a><br>
   &nbsp;   <br>
   当然，这个随机数带来的风险可以通过人工指定节点 ID 来摆平。</p>
 </li>
 </ul>
-<p>综上，如果是游戏服务端，使用第二种 snowflake 的思路是很合适的。  </p>
+<p>综上，如果是游戏服务端，使用 Snowflake 的思路是很合适的。  </p>
 <ol>
 <li>节点数并不多。</li>
 <li>性能要求中等。</li>
-<li>运营时间短，强如暴雪也也没到 20 年。   </li>
+<li>运营时间短，如暴雪这般成功也不过就 20 年。   </li>
 </ol>
-<p>只要适当调整下时间戳、节点 ID 、计数器的 bit 长度，差不多能控制在 64bit. <br>
+<p>只要适当调整下时间戳、节点 ID 、计数器的 bit 长度，控制在 64bit 是可以的. <br>
 至于时间戳长度有限的问题，百年后留给后人解决吧，大不了整一套 128bit 的软硬件。  </p>
   </div>
 
