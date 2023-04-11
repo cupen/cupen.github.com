@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="cupen<xcupen@gmail.com>">
+  <meta name="description" content="Posts and writings by cupen<xcupen@gmail.com>">
+  <title>
+    吹水轩
+&ndash; 聊聊 UID 的实现  </title>
+
+    <link rel="canonical" href="https://blog.dogame.cc/articles/2022-12-31/thinks-uid.html">
+
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:600,800" rel="stylesheet" type="text/css">
+  <link rel="shortcut icon" href="https://blog.dogame.cc/theme/images/logo.png">
+
+  <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/style.min.css?3c592a94">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+<meta name="keywords" content="">
+</head>
+<body>
+  <div class="container">
+    <div class="four columns sidebar">
+<nav>
+  <h1>Hi.</h1>
+  <a href="https://blog.dogame.cc/">
+    <img src="https://blog.dogame.cc/images/avatar.jpg" id="gravatar" alt="My photo"/>
+  </a>
+  <h2><a href="https://blog.dogame.cc/">I'm cupen<xcupen@gmail.com></a></h2>
+
+  <div id="bio">
+    <p></p>
+  </div>
+
+  <div id="social">
+Connect with me:
+<div id="stalker">
+
+
+
+
+
+
+
+  <a title="xcupen on Twitter" href="https://twitter.com/xcupen">
+    <i class="fa fa-twitter"></i>
+  </a>
+
+
+
+
+
+
+
+
+
+  <a title="cupen on Github" href="https://github.com/cupen">
+    <i class="fa fa-github"></i>
+  </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a title="4909388/cupen on Stack Overflow" href="http://stackoverflow.com/users/4909388/cupen">
+    <i class="fa fa-stack-overflow"></i>
+  </a>
+
+
+
+
+
+
+
+
+
+</div>  </div>
+
+  <div id="tags">
+    <ul>
+      <li><a href="https://blog.dogame.cc/pages/about.html">关于</a></li>
+      <li><a href="https://blog.dogame.cc/pages/plans.html">计划</a></li>
+      <li><a href="https://blog.dogame.cc/pages/wiki.html">Wiki</a></li>
+      <li><a href="http://evilbinary.org" target="_blank">鸭子<span style="font-size: 0.7em">&#8599;</span> </a></li>
+      </ul>
+  </div>
+</nav>    </div>
+
+    <div class="eleven columns content">
+  <p class="meta">
+    31 December 2022
+    <a href="/">
+      <i class="home fa fa-home"></i>
+    </a>
+  </p>
+
+  <h1 class="title"><a href="https://blog.dogame.cc/articles/2022-12-31/thinks-uid.html">聊聊 UID 的实现</a></h1>
+
+  <div class="article_text" id="post">
+    <pre>
+啊~ UID，你比 ID 多个 U，   
+啊~ UID，你比 UUID 少个 U。   
+                         --无名吹水师
+</pre>
+
+<p>这几年工作中常常会用到 UID ，虽有不少开源实现，但在不同场合使用哪种方案免不了得计较下。因此写一篇吹水文做点浅薄介绍，以便向人解释我的选择思路时能更从容些。  </p>
+<p>UID (Unique identifier) 顾名思义是一种唯一性 ID，但区别于 GUID/UUID ，它只是有限范围内唯一。
+比如在游戏场景里，玩家ID、野怪ID、对局ID 等等会用各自的 UID 算法实现，因为有对象类型（不同上下文）做区分，跨对象类型重复是无所谓的，只需保证同一种对象类型下唯一。</p>
+<p>下面的代码展示了一个最原始的 UID 实现（别笑，高级算法细节上也用计数器）。</p>
+<div class="highlight"><pre><span></span><code><span class="kd">var</span><span class="w"> </span><span class="nx">countor</span><span class="w"> </span><span class="kt">uint32</span><span class="w"></span>
+<span class="kd">func</span><span class="w"> </span><span class="nx">NextId</span><span class="p">()</span><span class="w"> </span><span class="kt">uint32</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">atomic</span><span class="p">.</span><span class="nx">AddUint32</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">countor</span><span class="p">)</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+
+<p>这个实现只保证进程内唯一，且重启后会产生重复，所以其出场机会很少。
+多数场合下，我们需要能满足跨进程唯一且重启后继续唯一的算法。</p>
+<p>有两种改进思路：<br>
+一种是引入一个 borker 用来协调不同进程的 ID 分配范围，并将已分配出去的 ID 区间保存到数据库。就跟分蛋糕一样，你一口我一口。</p>
+<!-- ```plantuml
+@startuml
+participant "业务进程" as p
+participant "UID Agent" as agent
+participant "Database" as db 
+
+activate p
+p -> p++: 检查本地 ID 池，用尽前及时补充
+p -> agent: 获取新的 ID 范围
+deactivate p
+
+activate agent
+deactivate p
+agent -> agent++: 分配 ID 范围
+agent -> db: 持久化
+deactivate agent
+deactivate agent
+@enduml
+```
+ -->
+
+<p><img src="https://www.plantuml.com/plantuml/svg/SoWkIImgAStDuIe0qfd9cGM9UIKAIazsp7hQjV35_jdFLtGhAIGMAnIWoeTwkYWufgVcbO0b4q4iL0KkYIM9IOd5gM3vb2G5Bgx4v9BCiiIIL91H2hfs2WNQsbOApnOtF9k_zDcSDK_dR500clbiuuBtUtgUJrdnTCFUfvszJ_kxdatVzcBXqgUjhM1T4Aki55xqRN_QF-tPj0tFPxM0z3tjsVLo-XQkb5I4BGWR8PfG9S52S0D1JddQqVQojHTX64m9K4rA4j2bFOrFThO-xPa6DGTXCAO0bqDgNWemJ040"/></p>
+<p>另一种则是在 UID 里加入节点 ID 和时间戳，其中节点 ID 用来保证跨进程唯一，而时间戳则保证进程重启后继续唯一。
+以下是参考。  </p>
+<ul>
+<li>
+<p>snowflake<br>
+  最早的实现，由 twitter 提出，是为全局有序（k-sorted）开发的 int64 UID 算法。<br>
+<a href="https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake">https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake</a><br>
+  文中给出了 <a href="https://github.com/twitter-archive/snowflake/blob/snowflake-2010/src/main/scala/com/twitter/service/snowflake/IdWorker.scala">Scala实现</a>，
+  也可参考 <a href="https://en.wikipedia.org/wiki/Snowflake_ID">Wiki说明</a> : <br>
+  &nbsp;  <br>
+  1 bit 保留<br>
+  41 bits 相对时间戳（毫秒），2^41 毫秒大约是 69 年，这之后会溢出导致重复。  <br>
+  10 bits 节点 ID，最多 1024 个节点。<br>
+  12 bits 计数器。<br>
+  算法性能每毫秒 2^12 个 UID，大约是 409w/sec.</p>
+</li>
+<li>
+<p>sonyflake<br>
+  索尼大法是 snowflake 的变种 <br>
+<a href="https://github.com/sony/sonyflake">https://github.com/sony/sonyflake</a>  <br>
+  &nbsp;  <br>
+  39 bits 相对时间戳（以10毫秒为单位），相当于 174年。<br>
+  8 bits 计数器。  <br>
+  16 bits 节点 ID。<br>
+  算法性能每 10 毫秒 2^8 个 UID，大约是 2.5w/sec. <br>
+  但我实测跑出了 5w 的成绩…… = =! 等我有空再跟。<br>
+<a href="https://github.com/sony/sonyflake/pull/9">https://github.com/sony/sonyflake/pull/9</a>  </p>
+</li>
+<li>
+<p>MongoDB ObjectId<br>
+  这个实现长度在 12 字节，实际使用时可以用 hex string。<br>
+  参考：<a href="https://www.mongodb.com/docs/manual/reference/method/ObjectId/">https://www.mongodb.com/docs/manual/reference/method/ObjectId/</a><br>
+  &nbsp;  <br>
+  简单说就是 4 字节 unix 绝对时间戳（秒） + 5 字节随机数 + 3 字节计数器<br>
+  算法性能每秒 2^24 个 UID，就是 1600w/sec. <br>
+  但由于随机数的缘故，在多进程环境下可能会有重复，理论上是 (进程数-1) / (2^40) 的概率，大约万亿分之几吧。 <br>
+  &nbsp;  <br>
+  另外说明下，该算法还有一种实现。  <br>
+  参考 mgo(mongodb driver) 的<a href="https://www.mongodb.com/docs/v3.0/reference/bson-types/#objectid">旧版 ObjectId 算法</a>。<br>
+  其与最新算法不同之处在于 5 字节随机数改由 3 字节随机数 + 2 字节进程 ID，这可以保证同一台主机里多进程生成的 ID 绝对唯一。但在容器环境下进程 ID 可能会重复，结果可能更杯具。 <br>
+<a href="https://github.com/globalsign/mgo/blob/eeefdecb41b842af6dc652aaea4026e8403e62df/bson/bson.go#L266-L283">https://github.com/globalsign/mgo/blob/eeefdecb41b842af6dc652aaea4026e8403e62df/bson/bson.go#L266-L283</a><br>
+  &nbsp;   <br>
+  当然，这个随机数带来的风险可以通过人工指定节点 ID 来摆平。</p>
+</li>
+</ul>
+<p>综上，如果是游戏服务端，使用第二种 snowflake 的思路是很合适的。  </p>
+<ol>
+<li>节点数并不多。</li>
+<li>性能要求中等。</li>
+<li>运营时间短，强如暴雪也也没到 20 年。   </li>
+</ol>
+<p>只要适当调整下时间戳、节点 ID 、计数器的 bit 长度，差不多能控制在 64bit. <br>
+至于时间戳长度有限的问题，百年后留给后人解决吧，到时大不了整一套 128bit 的软硬件。  </p>
+  </div>
+
+  <div class="article_meta related">
+    <h3>Category: </h3>
+    <span><a href="https://blog.dogame.cc/category/articles.html">articles</span>
+
+  </div>
+
+
+
+      <div class="footer">
+<div class="disclaimer">
+  
+    <p>
+      © cupen<xcupen@gmail.com>,  &mdash; built with <a href="http://getpelican.com" target="_blank">Pelican</a> using <a href="https://github.com/karambir/taman" target="_blank">Taman</a>, a port of jekyll theme <a href="https://github.com/swanson/lagom" target="_blank">Lagom</a>.
+    </p>
+  </div>      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>

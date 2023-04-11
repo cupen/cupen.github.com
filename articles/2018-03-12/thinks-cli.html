@@ -114,22 +114,23 @@ Connect with me:
   <h1 class="title"><a href="https://blog.dogame.cc/articles/2018-03-12/thinks-cli.html">给程序添加命令行接口（CLI）的一点体验</a></h1>
 
   <div class="article_text" id="post">
-    <p>服务端程序实际运行时总会需要一些外部参数，一般情况下读取固定路径的配置即可。但有时候运维需要自由调整程序的运行姿势，需要灵活一点的配置方式。我尝试了下 <a href="https://en.wikipedia.org/wiki/Command-line_interface">CLI</a> (Command-line interface) ，同事们用了都说好，大家一口气上五楼。</p>
-<p>大家用着是爽了，但我实现起来总有些磕碰，遂忍不住多尝试了几种方案。  </p>
-<h2 id="library">Library</h2>
-<p>没啥特点，只按部就班提供诸如添加参数、子命令和参数类型转换之类的 API. 使用这些 API 构造出 parser 去解析命令行输入。</p>
+    <p>程序在实际运行前总需要配置一些外部参数，一般会用固定路径下的配置文件。但有时运维想要临时整运行参数，我于是尝试了下 <a href="https://en.wikipedia.org/wiki/Command-line_interface">CLI</a> (Command-line interface) 。
+效果还不错，大家一口气上五楼。</p>
+<p>打铁趁热，干脆多尝试下几种 CLI 实现方案。  </p>
+<h2>Library</h2>
+<p>这种普通的库没啥特点，只按部就班提供诸如添加参数、子命令和参数类型转换之类的 API. 使用这些 API 构造出 parser 去解析命令行输入。</p>
 <ul>
 <li>Python <a href="https://docs.python.org/3/library/argparse.html">argpase</a></li>
 <li>C <a href="https://github.com/cofyc/argparse">argpase</a></li>
 <li>C <a href="https://www.gnu.org/software/libc/manual/html_node/Example-of-Getopt.html#Example-of-Getopt">getopt</a></li>
 </ul>
-<h2 id="dsl">DSL</h2>
+<h2>DSL</h2>
 <p>有点潮，只需完整地写出 Help 文本（DSL 语法就是 Help 内容），其通过解析该文本来生成 parser。非常直观，不依赖任何语言特性，于是所有语言都能实现一致的体验，实际上也都实现了。但和 argparse 一样只是个 parser ，需要额外编码去调用具体的函数。</p>
 <ul>
 <li><a href="http://docopt.org/">docopt</a>  </li>
 </ul>
-<h2 id="_1">元编程</h2>
-<p>这一类的使用体验是最好的，只需实现函数本身，外加一点注解、注释就能自动生成 parser 和函数 binding。 比较依赖语言的特性，至少也得有反射机制才行。比如 Python 连注释(docstring)都能在运行时获得，于是就有 <a href="https://github.com/shmuelamar/cbox">cbox</a> 这样的实现。使用非常简单，我还给它加了子命令支持。</p>
+<h2>元编程</h2>
+<p>这一类的使用体验是最好的，只需实现函数本身，外加一点注解就能自动生成 parser 和函数 binding。 比较依赖语言的特性，至少也得有反射机制才行。比如 Python 连注释(docstring)都能在运行时获得，于是就有 <a href="https://github.com/shmuelamar/cbox">cbox</a> 这样的实现。使用非常简单，我还给它加了子命令支持。</p>
 <ul>
 <li>Python <a href="https://github.com/shmuelamar/cbox">cbox</a></li>
 <li>Python <a href="https://github.com/pallets/click">click</a></li>

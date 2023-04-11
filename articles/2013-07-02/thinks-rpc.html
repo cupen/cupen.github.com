@@ -117,12 +117,12 @@ Connect with me:
     <div class="section" id="section-2">
 <h2>前言</h2>
 <p>这篇水文只是我对过去工作中某个问题的复盘和总结，描述了“请求-应答”式协议的另类用法。
-尽管本文并不是吹 RPC 实现，但原理与其类似，比如用 {<strong>方法标识</strong> + <strong>参数数据</strong>} 构造 TCP 字节流即可。
-甚至可以有更多花样，比如加入请求标识就能跟踪请求栈，但这超出了本文讨论范围。</p>
+尽管本文并不是吹 RPC 实现，但原理与其类似，比如用 {<strong>方法标识</strong> + <strong>参数数据</strong>} 构造 TCP 字节流。
+甚至可以有更多花样，比如用 UID + 上下文标识就能跟踪请求栈，但这超出了本文讨论范围。</p>
 </div>
 <div class="section" id="section-3">
 <h2>正文</h2>
-<p>本水文描述的应用场景仅限于“请求-应答”式的数据交换方式下（如 HTTP）。
+<p>本文描述的应用场景仅限于“请求-应答”式的数据交换方式下（如 HTTP）。
 例如一个普通 web 应用的运作流程( 不要在意细节 ;b )</p>
 <ol class="arabic simple">
 <li>Client 向 Server 发出请求;</li>
@@ -137,7 +137,7 @@ Connect with me:
 </pre>
 <p>如此，项目一开始程序员们分分钟就约定好了数据的含义：“接口 A 返回数据 dataA，接口 B 返回数据 dataB……”。Client 和 Server
 轻松快乐地进行着“你问我答”，程序员们便安心回家睡觉觉了，皆大欢喜……</p>
-<p>意淫结束。游戏毕竟不同于 web 应用，Client 与 Server 之间存在频繁交互，大量的接口，却重复交换着有限的几坨数据。来来去去就是些玩家属性、装备、钱包、背包 blahblah……
+<p>意淫结束。游戏毕竟不同于 web 应用，Client 与 Server 之间存在频繁交互，大量的接口重复交换着有限的几坨数据。来来去去就是些玩家属性、装备、钱包、背包 blahblah……
 用 JSON 举个例子，数据来自商店购买接口：</p>
 <div class="highlight"><pre><span></span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;_code_&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">操作码</span><span class="w"></span>
@@ -158,8 +158,8 @@ Connect with me:
 <li>数据约定与 Server 接口绑死。一旦需求变化，又得重新约定。而因为问题 1 的存在，还会导致更多修改。</li>
 </ol>
 <p>玩命领加班费很没意思，是时候加点设计。我给每个数据集合加入唯一标识（非绝对唯一，仅用于区分不同数据集合），Server 根据唯一标识提供数据，Client 则根据唯一标
-识来解读。如此，Server 可以在一次响应里返回多个数据集合，而 Client 都能正确解读，且只需实现一次。至此，这个另类的应用层协议便有了雏形。</p>
-<p>仍然用 JSON 描述改良后的数据(不代表具体实现）：</p>
+识来解读。如此 Server 可以在一次响应里返回多个数据集合，而 Client 都能正确解读且只需实现一次。至此，这个另类的应用层协议便有了雏形。</p>
+<p>仍然用 JSON 描述改良后的数据约定(不代表具体实现）：</p>
 <div class="highlight"><pre><span></span><span class="p">[</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;_code_&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">          </span><span class="err">#</span><span class="w"> </span><span class="err">当前接口的返回状态</span><span class="w"></span>
