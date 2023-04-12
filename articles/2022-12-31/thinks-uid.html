@@ -130,10 +130,11 @@ Connect with me:
 <span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
-<p>这个实现只保证进程内唯一，且重启后计数器重置，无法保证唯一。
-然而多数场合下，我们需要既能跨进程唯一，且重启后继续保证唯一的算法。</p>
+<p>这个实现只保证进程内唯一，且重启后计数器重置也会破坏唯一性。
+然而多数场合下，我们期望的 UID 既要满足跨进程唯一，也要满足在重启后保持唯一。  </p>
 <p>有两种改进思路：<br>
-一种是引入一个 borker 用来协调不同进程的 ID 分配范围，并将已分配出去的 ID 区间保存到数据库。就跟分蛋糕一样，你一口我一口，吃一口少一口。</p>
+一种是引入一个 borker 用来协调不同进程的 ID 分配范围，并将已分配出去的 ID 区间保存到数据库。就跟分蛋糕一样，你一口我一口，吃一口少一口。<br>
+参考下图：</p>
 <!-- ```plantuml
 @startuml
 participant "业务进程" as p
@@ -156,12 +157,12 @@ deactivate agent
  -->
 
 <p><img src="https://www.plantuml.com/plantuml/svg/SoWkIImgAStDuIe0qfd9cGM9UIKAIazsp7hQjV35_jdFLtGhAIGMAnIWoeTwkYWufgVcbO0b4q4iL0KkYIM9IOd5gM3vb2G5Bgx4v9BCiiIIL91H2hfs2WNQsbOApnOtF9k_zDcSDK_dR500clbiuuBtUtgUJrdnTCFUfvszJ_kxdatVzcBXqgUjhM1T4Aki55xqRN_QF-tPj0tFPxM0z3tjsVLo-XQkb5I4BGWR8PfG9S52S0D1JddQqVQojHTX64m9K4rA4j2bFOrFThO-xPa6DGTXCAO0bqDgNWemJ040"/></p>
-<p>另一种则是在 UID 里加入节点 ID 和时间戳，其中节点 ID 用来保证跨进程唯一，而时间戳则保证计数器重置也不影响唯一性。但在同一个时间戳里，计数器重置还是会破坏唯一性，所以算法会确保单位时间内只能生成一定数量（由计数器最大值决定）以杜绝这种情况。<br>
+<p>另一种则是在 UID 里加入节点 ID 和时间戳，其中节点 ID 用来保证跨进程唯一，而时间戳则保证计数器重置后也可以保证唯一。但在同一个时间戳里，是不能让计数器重置的，所以算法会降速以确保单位时间内只能生成一定数量（由计数器最大值决定）的 UID ，以杜绝这种情况。<br>
 以下是实现参考。 </p>
 <ul>
 <li>
 <p>Snowflake<br>
-  最早的实现，由 Twitter 提出，是为全局有序（k-sorted）开发的 int64 UID 算法。<br>
+  最早的实现由 Twitter 提出，是为全局有序（k-sorted）开发的 64bit UID 算法。<br>
 <a href="https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake">https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake</a><br>
   文中给出了 <a href="https://github.com/twitter-archive/snowflake/blob/snowflake-2010/src/main/scala/com/twitter/service/snowflake/IdWorker.scala">Scala实现</a>，
   也可参考 <a href="https://en.wikipedia.org/wiki/Snowflake_ID">Wiki说明</a> : <br>
@@ -174,24 +175,25 @@ deactivate agent
 </li>
 <li>
 <p>Sonyflake<br>
-  索尼大法加持后的 snowflake ，降低性能，提升易用性和使用寿命。 <br>
+  索尼大法加持后的 snowflake ，降低性能（计数器最大值），以换取节点数和使用寿命。 <br>
 <a href="https://github.com/sony/sonyflake">https://github.com/sony/sonyflake</a>  <br>
   &nbsp;  <br>
   39 bits 相对时间戳（以10毫秒为单位），相当于 174年。<br>
   8  bits 计数器。  <br>
-  16 bits 节点 ID。<br>
+  16 bits 节点 ID，最多 65536 个节点。<br>
   算法性能每 10 毫秒 2^8 个 UID，大约是 2.5w/sec. <br>
-  = =! 但我实测跑出了 5w 的 QPS…… 回头有空再跟吧……<br>
+  = =! 但我实测跑出了 5w 的 QPS…… 可能是统计误差吧，回头有空再看。  <br>
 <a href="https://github.com/sony/sonyflake/pull/9">https://github.com/sony/sonyflake/pull/9</a>  </p>
 </li>
 <li>
 <p>MongoDB ObjectId<br>
-  这个实现长度在 12 字节，实际使用时可以用 hex string。<br>
+  长度在 12 字节，96bit。实际使用时可转换为 string 类型。<br>
 <a href="https://www.mongodb.com/docs/manual/reference/method/ObjectId/">https://www.mongodb.com/docs/manual/reference/method/ObjectId/</a><br>
   &nbsp;  <br>
   4 字节 Unix 绝对时间戳（秒） + 5 字节随机数 + 3 字节计数器<br>
   算法性能每秒 2^24 个 UID，就是 1600w/sec. <br>
   但由于随机数的缘故，在多进程环境下可能会有重复，理论上是 (进程数-1) / (2^40) 的概率，大约万亿分之几吧。 <br>
+  此外该算法也是有使用寿命的，使用 4 字节绝对时间戳会有类似 <a href="https://en.wikipedia.org/wiki/Year_2038_problem">The 2038 problem</a> 问题，由于比 signed int32 多用 1 个 bit，可以续命 2^31 秒用到 2107 年。<br>
   &nbsp;  <br>
   另外，该算法还有一种实现。  <br>
   参考 mgo(mongodb driver) 的<a href="https://www.mongodb.com/docs/v3.0/reference/bson-types/#objectid">旧版 ObjectId 算法</a>。<br>
@@ -201,14 +203,9 @@ deactivate agent
   当然，这个随机数带来的风险可以通过人工指定节点 ID 来摆平。</p>
 </li>
 </ul>
-<p>综上，如果是游戏服务端，使用 Snowflake 的思路是不错的。  </p>
-<ol>
-<li>节点数并不多。</li>
-<li>性能要求中等。</li>
-<li>运营时间短，如暴雪这般成功也不过 20 年。   </li>
-</ol>
-<p>只要适当调整下时间戳、节点 ID 、计数器的 bit 长度，控制在 64bit 是可以的. <br>
-至于时间戳长度有限的问题，百年后留给后人解决吧，大不了整一套 128bit 的软硬件。  </p>
+<p>综上，这种基于时间戳 + 节点ID 的 UID 算法优缺点都有。  </p>
+<p>只要适当平衡下时间戳、节点 ID 、计数器的 bit 长度，控制在 64bit 内是完全可行的。 <br>
+至于使用寿命的问题（时间戳长度有限），百年后留给后人解决吧，大不了整一套 128bit 的软硬件。  </p>
   </div>
 
   <div class="article_meta related">
