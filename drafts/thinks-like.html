@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="cupen<xcupen@gmail.com>">
+  <meta name="description" content="Posts and writings by cupen<xcupen@gmail.com>">
+  <title>
+    吹水轩
+&ndash; 关于点赞系统的实现  </title>
+
+    <link rel="canonical" href="https://blog.dogame.cc/drafts/thinks-like.html">
+
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:600,800" rel="stylesheet" type="text/css">
+  <link rel="shortcut icon" href="https://blog.dogame.cc/theme/images/logo.png">
+
+  <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/style.min.css?3c592a94">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+<meta name="keywords" content="">
+</head>
+<body>
+  <div class="container">
+    <div class="four columns sidebar">
+<nav>
+  <h1>Hi.</h1>
+  <a href="https://blog.dogame.cc/">
+    <img src="https://blog.dogame.cc/images/avatar.jpg" id="gravatar" alt="My photo"/>
+  </a>
+  <h2><a href="https://blog.dogame.cc/">I'm cupen<xcupen@gmail.com></a></h2>
+
+  <div id="bio">
+    <p></p>
+  </div>
+
+  <div id="social">
+Connect with me:
+<div id="stalker">
+
+
+
+
+
+
+
+  <a title="xcupen on Twitter" href="https://twitter.com/xcupen">
+    <i class="fa fa-twitter"></i>
+  </a>
+
+
+
+
+
+
+
+
+
+  <a title="cupen on Github" href="https://github.com/cupen">
+    <i class="fa fa-github"></i>
+  </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a title="4909388/cupen on Stack Overflow" href="http://stackoverflow.com/users/4909388/cupen">
+    <i class="fa fa-stack-overflow"></i>
+  </a>
+
+
+
+
+
+
+
+
+
+</div>  </div>
+
+  <div id="tags">
+    <ul>
+      <li><a href="https://blog.dogame.cc/pages/about.html">关于</a></li>
+      <li><a href="https://blog.dogame.cc/pages/plans.html">计划</a></li>
+      <li><a href="https://blog.dogame.cc/pages/wiki.html">Wiki</a></li>
+      <li><a href="http://evilbinary.org" target="_blank">鸭子<span style="font-size: 0.7em">&#8599;</span> </a></li>
+      </ul>
+  </div>
+</nav>    </div>
+
+    <div class="eleven columns content">
+  <p class="meta">
+    12 April 2023
+    <a href="/">
+      <i class="home fa fa-home"></i>
+    </a>
+  </p>
+
+  <h1 class="title"><a href="https://blog.dogame.cc/drafts/thinks-like.html">关于点赞系统的实现</a></h1>
+
+  <div class="article_text" id="post">
+    <pre class="literal-block">
+服务端日志，既用于追踪程序状态，又用于数据分析，是非常重要的战略物资。
+我们要将之一个不漏滴收集起来，科学有规划滴使用。
+                                                          ——无名吹水师
+</pre>
+<p>从一个早期的游戏项目说起。上线伊始我们将日志记录在文件中，简单有效。而随着日志增多，我们开始分类分日期存放。
+后来由于增加了一些复杂的游戏玩法，服务端改用分布式架构分而治之。而日志也因此散落在不同机器上，好在规模不大，还能将就。</p>
+<p>再后来，游戏开了上百个新服，日志散落的情况愈发严重。不光是查看程序状态日志需要登录不同机器，
+连数据分析也开始乱套，聚合类统计压根无法进行，只能靠手工汇总来苟且，实在凄惨。</p>
+<p>于是我意识到一个中心化的日志服务管理起来更容易，但直接迁移到开源方案上没啥底气（主要是害怕丢日志）。
+只好先折中，使用 rsync 将所有机器上的日志同步到一台高配机上集中处理(32核机干这种脏活………）。
+简单易用，成果直观。但弊端也有，最先造成麻烦的是实时性。网上倒有 inotify 配合 rsync 的解决方案，见例子:</p>
+<div class="highlight"><pre><span></span><span class="k">while</span> true<span class="p">;</span> <span class="k">do</span>
+    inotifywait -r -e modify,attrib,close_write,move,create,delete /path/to/src_dir/
+    rsync -avz /path/to/src_dir/ logporter@gameserver01:/path/to/dest_dir/
+<span class="k">done</span>
+</pre></div>
+<p>虽然可行，但有很大瑕疵，主要在于：</p>
+<ol class="arabic simple">
+<li>CPU算力浪费。rsync 每次启动会重读日志文件内容分块算 hash ,传输前还会做压缩。频繁启动它会导致 CPU 负载过高，尽管可以按日期分目录，但也只是五十步笑百步。</li>
+<li>逻辑丑陋。从 rsync 进程运行结束后到下一轮 inotifywait 进程启动前总有点时间间隔，这中间发生的文件变化可能会漏掉，除非日志文件一直在持续写。也许不值得计较，但总归是个逻辑问题……</li>
+</ol>
+<p>综上，rsync 方案并没有多好，付出了很大代价（硬件资源，心理压力，以及运维工作量）才换来分布式环境下日志中心化的局面。</p>
+<p>无论如何，日志中心化的问题暂且按下，但其它问题却显得尖锐起来。比如我们检索程序日志要反复 <tt class="docutils literal">grep <span class="pre">-P</span> &quot;$regex&quot;</tt> 一堆文件，正则动不动就复杂到需要抄小本本。
+而数据分析方面，使用 python 硬编码实现的统计代码可维护性很差，远不如 SQL 简洁。眼看着要变成屎山，我于是写了个程序将日志增量导入到 OLAP 系统以支持 SQL。
+至此，这个歪歪斜斜的日志收集“系统”进化到关键点了，还有以下几点缺陷需要解决：</p>
+<ol class="arabic simple">
+<li>接口难用，与精心设计的 logstash 相比简直云泥之别。</li>
+<li>投递实时性差，由于 rsync 耗费算力过多，权衡成本后只能妥协在分钟级的滞后性上。</li>
+<li>运维工作量大，多了个旁门左道的常驻进程，还得时常注意 rsync 的 CPU 占用率。</li>
+</ol>
+<p>需要有更高生产力的日志系统才撑的住。</p>
+<p>某日和杨百万吹水，偶然聊到日志传输的的问题。很有意思，每台机器上部署一个 Flume 实例作为 &quot;logging agent&quot;，
+业务进程只需把日志投递到本机上的 agent ，避开跨网传输的风险。投递完成的日志由 agent 转运并保证必达(Reliable Message Delivery)。</p>
+<img alt="日志投递" class="uml" src="https://blog.dogame.cc/images/99e2ea74c826f3f6f2998f3f3ad2e78f.png" />
+<p>一切豁然开朗，有了实时可靠的日志投递，剩下的事就简单了。</p>
+<ul class="simple">
+<li>审计日志实时导入 OLAP 系统。</li>
+<li>程序日志实时导入 ElasticSearch ，以取代 grep 。</li>
+</ul>
+<p>大事可期矣！</p>
+<div class="section" id="section-2">
+<h2>后记</h2>
+<p>这篇水文整理自我个人笔记里一些七零八落的碎片，旨在留下点面包屑做指引，避免重复挖坑。从 2016年12月起动笔念头到现在 2018年3月才算落地完，跨度有点久。
+相信不止我一人有类似的经历，也肯定有人一开始就站在了我想要到达的地方。不过这都不重要了，我们应该着眼于当下，积极接纳更先进的生产力。</p>
+</div>
+
+  </div>
+
+  <div class="article_meta related">
+    <h3>Category: </h3>
+    <span><a href="https://blog.dogame.cc/category/articles.html">articles</span>
+
+  </div>
+
+
+
+      <div class="footer">
+<div class="disclaimer">
+  
+    <p>
+      © cupen<xcupen@gmail.com>,  &mdash; built with <a href="http://getpelican.com" target="_blank">Pelican</a> using <a href="https://github.com/karambir/taman" target="_blank">Taman</a>, a port of jekyll theme <a href="https://github.com/swanson/lagom" target="_blank">Lagom</a>.
+    </p>
+  </div>      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>

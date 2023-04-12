@@ -120,18 +120,17 @@ Connect with me:
                                          --无名吹水师
 </pre>
 
-<p>我这几年工作中常常会用到 UID ，虽有不少开源实现，但在不同场合使用哪种方案总免不了计较下。因此我决定写一篇吹水文做点浅薄介绍，以便向人解释我的思路时能更从容些。  </p>
-<p>UID (Unique identifier) 顾名思义是一种唯一性 ID，但区别于 GUID/UUID ，它只是有限范围内唯一。
-比如在游戏场景里，玩家ID、野怪ID、对局ID 等等会用各自的 UID 算法实现，类型不一样的对象 ID 重复是无所谓的，只要保证同类型对象 ID 唯一即可。</p>
-<p>下面的代码展示了一个最原始的 UID 实现（别笑，高级算法无非就是分布式计数器）。</p>
+<p>我这几年工作中常常会用到 UID ，虽有不少开源实现，但在不同场合使用哪种方案总免不了计较下。因此有必要写篇吹水文做点浅薄介绍，以便向人解释思路时能更从容些。  </p>
+<p>UID (Unique identifier) 顾名思义是一种唯一性 ID，但区别于 GUID/UUID ，它只是有限范围内唯一。有类型区分的前提下，通常只需保证相同类型对象 ID 唯一即可，所以在游戏项目里，玩家ID、物品ID、野怪ID、对局ID 等等是可以分别选择不同的 UID 算法实现的。</p>
+<p>下面的代码展示了一个最原始的 UID 实现（别笑，高级算法也会用到计数器）。</p>
 <div class="highlight"><pre><span></span><code><span class="kd">var</span><span class="w"> </span><span class="nx">countor</span><span class="w"> </span><span class="kt">uint32</span><span class="w"></span>
 <span class="kd">func</span><span class="w"> </span><span class="nx">NextId</span><span class="p">()</span><span class="w"> </span><span class="kt">uint32</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">atomic</span><span class="p">.</span><span class="nx">AddUint32</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">countor</span><span class="p">)</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
-<p>这个实现只保证进程内唯一，且重启后计数器重置也会破坏唯一性。
-然而多数场合下，我们期望的 UID 既要满足跨进程唯一，也要满足在重启后保持唯一。  </p>
+<p>这个例子只保证进程内唯一，且重启计数器重置也会破坏唯一性。
+然而多数场合下，我们期望的 UID 既要满足跨进程唯一，也要满足在重启后保持唯一，专业点说叫分布式 UID。  </p>
 <p>有两种改进思路：<br>
 一种是引入一个 borker 用来协调不同进程的 ID 分配范围，并将已分配出去的 ID 区间保存到数据库。就跟分蛋糕一样，你一口我一口，吃一口少一口。<br>
 参考下图：</p>
@@ -157,7 +156,8 @@ deactivate agent
  -->
 
 <p><img src="https://www.plantuml.com/plantuml/svg/SoWkIImgAStDuIe0qfd9cGM9UIKAIazsp7hQjV35_jdFLtGhAIGMAnIWoeTwkYWufgVcbO0b4q4iL0KkYIM9IOd5gM3vb2G5Bgx4v9BCiiIIL91H2hfs2WNQsbOApnOtF9k_zDcSDK_dR500clbiuuBtUtgUJrdnTCFUfvszJ_kxdatVzcBXqgUjhM1T4Aki55xqRN_QF-tPj0tFPxM0z3tjsVLo-XQkb5I4BGWR8PfG9S52S0D1JddQqVQojHTX64m9K4rA4j2bFOrFThO-xPa6DGTXCAO0bqDgNWemJ040"/></p>
-<p>另一种则是在 UID 里加入节点 ID 和时间戳，其中节点 ID 用来保证跨进程唯一，而时间戳则保证计数器重置后不会破坏唯一性。但在同一个时间戳里，是不能让计数器重置的，所以算法会降速以确保单位时间内只能生成一定数量（由计数器最大值决定）来杜绝这种情况。<br>
+<p>这种方案维护成本较高，我个人不太感冒。  </p>
+<p>另一种则是在 UID 里加入节点 ID 和时间戳，其中节点 ID 用来保证跨进程唯一，而时间戳则保证计数器重置后不会破坏唯一性。但在同一个时间戳里是不能让计数器重置的，所以算法会降速以确保单位时间内只能生成有限数量的 ID 来杜绝这种情况。<br>
 以下是实现参考。 </p>
 <ul>
 <li>
@@ -196,7 +196,7 @@ deactivate agent
   &nbsp;  <br>
   4 字节 Unix 绝对时间戳（秒） + 5 字节随机数 + 3 字节计数器<br>
   算法性能每秒 2^24 个 UID，就是 1600w/sec. <br>
-  但由于随机数的缘故，在多进程环境下可能会有重复，理论上是 (进程数-1) / (2^40) 的概率，大约万亿分之几吧。 <br>
+  但由于随机数的缘故，多进程环境下可能会有重复，理论上是 (进程数-1) / (2^40) 的概率，大约万亿分之几吧。 <br>
   此外该算法使用 4 字节绝对时间戳会有类似 <a href="https://en.wikipedia.org/wiki/Year_2038_problem">The 2038 problem</a> 的问题，好在比 signed int32 多用 1 个 bit，可续命 2^31 秒用到 2107 年。<br>
   &nbsp;  <br>
   该算法还有一种早期版本。 <br>
@@ -205,7 +205,7 @@ deactivate agent
   其不同之处在于旧版的 5 字节随机数是由 3 字节主机名 hash + 2 字节进程 ID 组成，能保证同一台主机下多进程生成的 ID 绝对唯一。但在容器环境下，由于进程 ID 可能会重复，结果可能更杯具。   </p>
 </li>
 </ul>
-<p>综上，这种基于时间戳 + 节点ID 的 UID 算法优缺点都有。  </p>
+<p>综上，这种基于时间戳 + 节点ID 的 UID 算法优缺点都有，也可以结合 borker 一起使用。  </p>
 <p>只要适当平衡下时间戳、节点 ID 、计数器的 bit 长度，控制在 64bit 内是完全可行的。 <br>
 至于时间戳有限的问题，百年后留给后人解决吧，也许可以整一套 128bit 的软硬件。  </p>
   </div>
