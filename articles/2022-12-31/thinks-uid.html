@@ -120,7 +120,7 @@ Connect with me:
                                          --无名吹水师
 </pre>
 
-<p>我这几年工作中常常会用到 UID ，虽有不少开源实现，但在不同场合使用哪种方案总免不了计较下。因此有必要写篇吹水文做点浅薄介绍，以便向人解释思路时能更从容些。  </p>
+<p>我这几年工作中常常会用到 UID ，虽有不少开源实现，但在不同场合使用哪种方案总免不了计较下。因此我觉得有必要写篇吹水文做点浅薄介绍，以便向人解释思路时能从容些。  </p>
 <p>UID (Unique identifier) 顾名思义是一种唯一性 ID，但区别于 GUID/UUID ，它只是有限范围内唯一。有类型区分的前提下，通常只需保证相同类型对象 ID 唯一即可，所以在游戏项目里，玩家ID、物品ID、野怪ID、对局ID 等等是可以分别选择不同的 UID 算法实现的。</p>
 <p>下面的代码展示了一个最原始的 UID 实现（别笑，高级算法也会用到计数器）。</p>
 <div class="highlight"><pre><span></span><code><span class="kd">var</span><span class="w"> </span><span class="nx">countor</span><span class="w"> </span><span class="kt">uint32</span><span class="w"></span>
