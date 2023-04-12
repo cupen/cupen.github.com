@@ -157,7 +157,7 @@ deactivate agent
  -->
 
 <p><img src="https://www.plantuml.com/plantuml/svg/SoWkIImgAStDuIe0qfd9cGM9UIKAIazsp7hQjV35_jdFLtGhAIGMAnIWoeTwkYWufgVcbO0b4q4iL0KkYIM9IOd5gM3vb2G5Bgx4v9BCiiIIL91H2hfs2WNQsbOApnOtF9k_zDcSDK_dR500clbiuuBtUtgUJrdnTCFUfvszJ_kxdatVzcBXqgUjhM1T4Aki55xqRN_QF-tPj0tFPxM0z3tjsVLo-XQkb5I4BGWR8PfG9S52S0D1JddQqVQojHTX64m9K4rA4j2bFOrFThO-xPa6DGTXCAO0bqDgNWemJ040"/></p>
-<p>另一种则是在 UID 里加入节点 ID 和时间戳，其中节点 ID 用来保证跨进程唯一，而时间戳则保证计数器重置后也可以保证唯一。但在同一个时间戳里，是不能让计数器重置的，所以算法会降速以确保单位时间内只能生成一定数量（由计数器最大值决定）来杜绝这种情况。<br>
+<p>另一种则是在 UID 里加入节点 ID 和时间戳，其中节点 ID 用来保证跨进程唯一，而时间戳则保证计数器重置后不会破坏唯一性。但在同一个时间戳里，是不能让计数器重置的，所以算法会降速以确保单位时间内只能生成一定数量（由计数器最大值决定）来杜绝这种情况。<br>
 以下是实现参考。 </p>
 <ul>
 <li>
