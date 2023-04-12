@@ -122,7 +122,7 @@ Connect with me:
 
 <p>我这几年工作中常常会用到 UID ，虽有不少开源实现，但在不同场合使用哪种方案总免不了计较下。因此我决定写一篇吹水文做点浅薄介绍，以便向人解释我的思路时能更从容些。  </p>
 <p>UID (Unique identifier) 顾名思义是一种唯一性 ID，但区别于 GUID/UUID ，它只是有限范围内唯一。
-比如在游戏场景里，玩家ID、野怪ID、对局ID 等等会用各自的 UID 算法实现，因为有类型做区分，所以类型不一样的对象 ID 重复是无所谓的。</p>
+比如在游戏场景里，玩家ID、野怪ID、对局ID 等等会用各自的 UID 算法实现，类型不一样的对象 ID 重复是无所谓的，只要保证同类型对象 ID 唯一即可。</p>
 <p>下面的代码展示了一个最原始的 UID 实现（别笑，高级算法无非就是分布式计数器）。</p>
 <div class="highlight"><pre><span></span><code><span class="kd">var</span><span class="w"> </span><span class="nx">countor</span><span class="w"> </span><span class="kt">uint32</span><span class="w"></span>
 <span class="kd">func</span><span class="w"> </span><span class="nx">NextId</span><span class="p">()</span><span class="w"> </span><span class="kt">uint32</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
@@ -175,25 +175,28 @@ deactivate agent
 </li>
 <li>
 <p>Sonyflake<br>
-  索尼大法加持后的 snowflake ，降低性能（计数器最大值），以换取节点数和使用寿命。 <br>
+  索尼大法加持版 snowflake ，降低性能（计数器最大值），以换取节点数和使用寿命。 <br>
 <a href="https://github.com/sony/sonyflake">https://github.com/sony/sonyflake</a>  <br>
   &nbsp;  <br>
   39 bits 相对时间戳（以10毫秒为单位），相当于 174年。<br>
   8  bits 计数器。  <br>
   16 bits 节点 ID，最多 65536 个节点。<br>
   算法性能每 10 毫秒 2^8 个 UID，大约是 2.5w/sec. <br>
-  = =! 但我实测跑出了 5w 的 QPS…… 可能是统计误差吧，回头有空再看。  <br>
+  &nbsp;</p>
+<blockquote>
+<p>我实测跑出了 5w 的 QPS…… 可能是统计误差。= =!   <br>
 <a href="https://github.com/sony/sonyflake/pull/9">https://github.com/sony/sonyflake/pull/9</a>  </p>
+</blockquote>
 </li>
 <li>
 <p>MongoDB ObjectId<br>
-  长度在 12 字节，96bit。实际使用时可转换为 string 类型。<br>
+  长度在 12 字节，96bit。实际使用中可转换为 string 类型。<br>
 <a href="https://www.mongodb.com/docs/manual/reference/method/ObjectId/">https://www.mongodb.com/docs/manual/reference/method/ObjectId/</a><br>
   &nbsp;  <br>
   4 字节 Unix 绝对时间戳（秒） + 5 字节随机数 + 3 字节计数器<br>
   算法性能每秒 2^24 个 UID，就是 1600w/sec. <br>
   但由于随机数的缘故，在多进程环境下可能会有重复，理论上是 (进程数-1) / (2^40) 的概率，大约万亿分之几吧。 <br>
-  此外该算法也是有使用寿命的，使用 4 字节绝对时间戳会有类似 <a href="https://en.wikipedia.org/wiki/Year_2038_problem">The 2038 problem</a> 问题，由于比 signed int32 多用 1 个 bit，可以续命 2^31 秒用到 2107 年。<br>
+  此外该算法也是有使用寿命的，使用 4 字节绝对时间戳会有类似 <a href="https://en.wikipedia.org/wiki/Year_2038_problem">The 2038 problem</a> 的问题，但由于比 signed int32 多用 1 个 bit，可以续命 2^31 秒用到 2107 年。<br>
   &nbsp;  <br>
   另外，该算法还有一种实现。  <br>
   参考 mgo(mongodb driver) 的<a href="https://www.mongodb.com/docs/v3.0/reference/bson-types/#objectid">旧版 ObjectId 算法</a>。<br>
