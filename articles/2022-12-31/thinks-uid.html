@@ -199,7 +199,7 @@ deactivate agent
   但由于随机数的缘故，在多进程环境下可能会有重复，理论上是 (进程数-1) / (2^40) 的概率，大约万亿分之几吧。 <br>
   此外该算法也是有使用寿命的，使用 4 字节绝对时间戳会有类似 <a href="https://en.wikipedia.org/wiki/Year_2038_problem">The 2038 problem</a> 的问题，但由于比 signed int32 多用 1 个 bit，可以续命 2^31 秒用到 2107 年。<br>
   &nbsp;  <br>
-  另外，该算法还有一种实现。  <br>
+  该算法还有一种实现。  <br>
   参考 mgo(mongodb driver) 的<a href="https://www.mongodb.com/docs/v3.0/reference/bson-types/#objectid">旧版 ObjectId 算法</a>。<br>
   其与最新算法不同之处在于 5 字节随机数改由 3 字节随机数 + 2 字节进程 ID，这可以保证同一台主机里多进程生成的 ID 绝对唯一。但在容器环境下，由于进程 ID 可能会重复，结果可能更杯具。 <br>
 <a href="https://github.com/globalsign/mgo/blob/eeefdecb41b842af6dc652aaea4026e8403e62df/bson/bson.go#L266-L283">https://github.com/globalsign/mgo/blob/eeefdecb41b842af6dc652aaea4026e8403e62df/bson/bson.go#L266-L283</a><br>
