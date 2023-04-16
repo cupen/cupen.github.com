@@ -120,8 +120,8 @@ Connect with me:
                                          --无名吹水师
 </pre>
 
-<p>我这几年工作中常常会用到 UID ，虽有不少开源实现，但在不同场合使用哪种方案总免不了计较下。因此我觉得有必要写篇吹水文做点浅薄介绍，以便向人解释思路时能从容些。  </p>
-<p>UID (Unique identifier) 顾名思义是一种唯一性 ID，但区别于 GUID/UUID ，它只是有限范围内唯一。有类型区分的前提下，通常只需保证相同类型对象 ID 唯一即可，所以在游戏项目里，玩家ID、物品ID、野怪ID、对局ID 等等是可以分别选择不同的 UID 算法实现的。</p>
+<p>我这几年工作中常常用到 UID ，虽有不少开源实现，但在不同场合使用哪种方案总免不了计较下。因此留篇水文做点浅薄介绍，以便向人解释思路时能从容些。  </p>
+<p>UID (Unique identifier) 顾名思义是一种唯一性 ID，但区别于 GUID/UUID ，它只是有限范围内唯一。通常会在有上下文区分的前提下使用，比如在游戏项目中，玩家ID、物品ID、野怪ID、对局ID 等等可以分别选择不同的 UID 算法实现，只要保证相同类型对象 ID 唯一即可。</p>
 <p>下面的代码展示了一个最原始的 UID 实现（别笑，高级算法也会用到计数器）。</p>
 <div class="highlight"><pre><span></span><code><span class="kd">var</span><span class="w"> </span><span class="nx">countor</span><span class="w"> </span><span class="kt">uint32</span><span class="w"></span>
 <span class="kd">func</span><span class="w"> </span><span class="nx">NextId</span><span class="p">()</span><span class="w"> </span><span class="kt">uint32</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
@@ -162,7 +162,7 @@ deactivate agent
 <ul>
 <li>
 <p>Snowflake<br>
-  最早的实现由 Twitter 提出，是为全局有序（k-sorted）开发的 64bit UID 算法。<br>
+  最早由 Twitter 提出，是为全局有序（k-sorted）开发的 64bit UID 算法。<br>
 <a href="https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake">https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake</a><br>
   文中给出了 <a href="https://github.com/twitter-archive/snowflake/blob/snowflake-2010/src/main/scala/com/twitter/service/snowflake/IdWorker.scala">Scala实现</a>，
   也可参考 <a href="https://en.wikipedia.org/wiki/Snowflake_ID">Wiki说明</a> : <br>
