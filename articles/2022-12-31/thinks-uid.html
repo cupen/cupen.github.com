@@ -175,23 +175,18 @@ deactivate agent
 </li>
 <li>
 <p>Sonyflake<br>
-  索尼大法加持版 snowflake ，降低性能（计数器最大值），以换取节点数和使用寿命。 <br>
+  索尼魔改版 Snowflake ，减少 UID 生成速率，增加节点数和使用寿命。 <br>
 <a href="https://github.com/sony/sonyflake">https://github.com/sony/sonyflake</a>  <br>
   &nbsp;  <br>
   1 bit 保留<br>
   39 bits 相对时间戳（以10毫秒为单位），相当于 174年。<br>
   8  bits 计数器。  <br>
   16 bits 节点 ID，最多 65536 个节点。<br>
-  算法性能每 10 毫秒 2^8 个 UID，大约是 2.5w/sec. <br>
-  &nbsp;</p>
-<blockquote>
-<p>我实测跑出了 5w 的 QPS…… 可能是统计误差。= =!   <br>
-<a href="https://github.com/sony/sonyflake/pull/9">https://github.com/sony/sonyflake/pull/9</a>  </p>
-</blockquote>
+  算法性能每 10 毫秒 2^8 个 UID，大约是 2.5w/sec.   </p>
 </li>
 <li>
 <p>MongoDB ObjectId<br>
-  长度在 12 字节，96bit。<br>
+  96bit UID 算法，也即 12 个字节。<br>
 <a href="https://www.mongodb.com/docs/manual/reference/method/ObjectId/">https://www.mongodb.com/docs/manual/reference/method/ObjectId/</a><br>
   &nbsp;  <br>
   4 字节 Unix 绝对时间戳（秒） + 5 字节随机数 + 3 字节计数器<br>
