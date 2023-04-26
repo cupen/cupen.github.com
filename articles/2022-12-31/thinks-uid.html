@@ -171,7 +171,7 @@ deactivate agent
   41 bits 相对时间戳（毫秒），2^41 毫秒大约是 69 年，这之后会溢出导致重复。  <br>
   10 bits 节点 ID，最多 1024 个节点。<br>
   12 bits 计数器。<br>
-  算法性能每毫秒 2^12 个 UID，大约是 409w/sec.</p>
+  算法性能每毫秒 2^12 个 UID，大约是 409w/sec/每节点.</p>
 </li>
 <li>
 <p>Sonyflake<br>
@@ -182,7 +182,7 @@ deactivate agent
   39 bits 相对时间戳（以10毫秒为单位），相当于 174年。<br>
   8  bits 计数器。  <br>
   16 bits 节点 ID，最多 65536 个节点。<br>
-  算法性能每 10 毫秒 2^8 个 UID，大约是 2.5w/sec.   </p>
+  算法性能每 10 毫秒 2^8 个 UID，大约是 2.5w/sec/每节点.   </p>
 </li>
 <li>
 <p>MongoDB ObjectId<br>
@@ -190,7 +190,7 @@ deactivate agent
 <a href="https://www.mongodb.com/docs/manual/reference/method/ObjectId/">https://www.mongodb.com/docs/manual/reference/method/ObjectId/</a><br>
   &nbsp;  <br>
   4 字节 Unix 绝对时间戳（秒） + 5 字节随机数 + 3 字节计数器<br>
-  算法性能每秒 2^24 个 UID，就是 1600w/sec. <br>
+  算法性能每秒 2^24 个 UID，就是 1600w/sec/每节点. <br>
   但由于随机数的缘故，多进程环境下可能会有重复，理论上是 (进程数-1) / (2^40) 的概率，大约万亿分之几吧。 <br>
   此外该算法使用 4 字节绝对时间戳会有类似 <a href="https://en.wikipedia.org/wiki/Year_2038_problem">The 2038 problem</a> 的问题，好在比 signed int32 多用 1 个 bit，可续命 2^31 秒用到 2107 年。<br>
   &nbsp;  <br>
