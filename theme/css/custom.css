@@ -14,3 +14,20 @@
 #home h2 {
     color: #181818;
 }
+
+
+ul.posts li {
+    margin-bottom: 10px;
+}
+
+.posts li .date {
+    display: inline-block;
+    font-size: 80%;
+    color: darkgray;
+}
+
+@media screen and (max-device-width: 500px) {
+    #tags {
+        display: none;
+    }
+}

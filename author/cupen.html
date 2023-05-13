@@ -16,26 +16,25 @@
   <link href="//fonts.googleapis.com/css?family=Open+Sans:600,800" rel="stylesheet" type="text/css">
   <link rel="shortcut icon" href="https://blog.dogame.cc/theme/images/logo.png">
 
-  <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/style.min.css?3c592a94">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="https://blog.dogame.cc/theme/css/style.min.css?4a0982c4">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
 
 </head>
 <body>
   <div class="container">
     <div class="four columns sidebar">
 <nav>
-  <h1>Hi.</h1>
   <a href="https://blog.dogame.cc/">
-    <img src="https://blog.dogame.cc/images/avatar.jpg" id="gravatar" alt="My photo"/>
+    <img src="https://blog.dogame.cc/images/avatar.jpg" id="gravatar" alt="My photo" />
   </a>
-  <h2><a href="https://blog.dogame.cc/">I'm cupen<xcupen@gmail.com></a></h2>
+  <h2><a href="https://blog.dogame.cc/">cupen<xcupen@gmail.com></a></h2>
 
   <div id="bio">
     <p></p>
   </div>
 
   <div id="social">
-Connect with me:
 <div id="stalker">
 
 
@@ -91,46 +90,56 @@ Connect with me:
 
 </div>  </div>
 
-  <div id="tags">
-    <ul>
-      <li><a href="https://blog.dogame.cc/pages/about.html">关于</a></li>
-      <li><a href="https://blog.dogame.cc/pages/plans.html">计划</a></li>
-      <li><a href="https://blog.dogame.cc/pages/wiki.html">Wiki</a></li>
-      <li><a href="http://evilbinary.org" target="_blank">鸭子<span style="font-size: 0.7em">&#8599;</span> </a></li>
-      </ul>
+  <div id="tags"> 
+    <ul class="list-group col-md-1 row-sm-1">
+
+      <li class="list-group-item"><a href="https://blog.dogame.cc/pages/about.html">关于</a></li>
+      <li class="list-group-item"><a href="https://blog.dogame.cc/pages/plans.html">计划</a></li>
+      <li class="list-group-item"><a href="https://blog.dogame.cc/pages/wiki.html">Wiki</a></li>
+
+      <li class="list-group-item"><a href="http://evilbinary.org" target="_blank">鸭子<span
+            style="font-size: 0.7em">&#8599;</span> </a></li>
+    </ul>
   </div>
 </nav>    </div>
 
     <div class="eleven columns content">
 <div id="home">
-  <h2>Blog Posts </h2>
+  <!-- <h2>Blog Posts </h2> -->
   <ul class="posts">
     <li>
-      <span>2022年12月31日 Sat &raquo;</span>
+      <span class="date">2022年12月31日 Sat &raquo;</span>
+      <br/>
       <a href="https://blog.dogame.cc/articles/2022-12-31/thinks-uid.html">欣赏下几种 UID 的实现</a>
     </li>
     <li>
-      <span>2018年03月12日 Mon &raquo;</span>
+      <span class="date">2018年03月12日 Mon &raquo;</span>
+      <br/>
       <a href="https://blog.dogame.cc/articles/2018-03-12/thinks-cli.html">给程序添加命令行接口（CLI）的一点体验</a>
     </li>
     <li>
-      <span>2017年10月17日 Tue &raquo;</span>
+      <span class="date">2017年10月17日 Tue &raquo;</span>
+      <br/>
       <a href="https://blog.dogame.cc/articles/2017-10-17/guide-install-ansible-on-windows.html">Windows/msys2 下安装和使用 ansible</a>
     </li>
     <li>
-      <span>2017年01月02日 Mon &raquo;</span>
+      <span class="date">2017年01月02日 Mon &raquo;</span>
+      <br/>
       <a href="https://blog.dogame.cc/articles/2017-01-02/correct-some-nonsense.html">纠正一些对高手的“偏见”</a>
     </li>
     <li>
-      <span>2016年12月21日 Wed &raquo;</span>
+      <span class="date">2016年12月21日 Wed &raquo;</span>
+      <br/>
       <a href="https://blog.dogame.cc/articles/2016-12-21/thinks-serverlog.html">关于从业以来服务端日志若干历史问题的决议</a>
     </li>
     <li>
-      <span>2013年07月02日 Tue &raquo;</span>
+      <span class="date">2013年07月02日 Tue &raquo;</span>
+      <br/>
       <a href="https://blog.dogame.cc/articles/2013-07-02/thinks-rpc.html">关于&quot;请求-应答&quot;式协议在游戏上的应用</a>
     </li>
     <li>
-      <span>2013年05月17日 Fri &raquo;</span>
+      <span class="date">2013年05月17日 Fri &raquo;</span>
+      <br/>
       <a href="https://blog.dogame.cc/articles/2013-05-17/usexdebug.html">小用xdebug</a>
     </li>
   </ul>
@@ -141,7 +150,7 @@ Connect with me:
 <div class="disclaimer">
   
     <p>
-      © cupen<xcupen@gmail.com>,  &mdash; built with <a href="http://getpelican.com" target="_blank">Pelican</a> using <a href="https://github.com/karambir/taman" target="_blank">Taman</a>, a port of jekyll theme <a href="https://github.com/swanson/lagom" target="_blank">Lagom</a>.
+      © cupen<xcupen@gmail.com>,  &mdash; built with <a href="http://getpelican.com" target="_blank">Pelican</a> with a forked theme <a href="https://github.com/cupen/taman" target="_blank">Taman</a>
     </p>
   </div>      </div>
     </div>
