@@ -1247,7 +1247,7 @@ ul.posts li {
 }
 
 ul.posts span {
-  font-family: 'Lucida Console', 'Andale Mono', monospace;
+  font-family: "Hiragino Sans GB", "Microsoft Yahei", 'Lucida Console', 'Andale Mono', monospace, Arial, sans-serif;
   color: #aaa;
   padding-right: 5px;
   font-size: 14px;
@@ -1316,19 +1316,20 @@ nav h2 {
 
 .sidebar {
   padding-top: 25px;
-  /* font-family: "open sans", sans-serif; */
 }
 
-.sidebar p {
+/* .sidebar p {
   font-weight: 100;
 }
 
 .sidebar a {
   font-weight: 600;
-}
+} */
 
 .content {
-  font: 400 16px/22px "open sans", sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 16px;
   border-left: 1px solid #DDD;
   padding-left: 40px;
   padding-top: 25px;
@@ -1536,5 +1537,5 @@ pre {
 
 code,
 pre {
-  font-family: "Hiragino Sans GB", "Microsoft Yahei", Helvetica, "Helvetica Neue", "微软雅黑", Tahoma, Arial, sans-serif
+  font-family: "Hiragino Sans GB", "Microsoft Yahei", 'Lucida Console', 'Andale Mono', monospace, Arial, sans-serif;
 }
