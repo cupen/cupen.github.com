@@ -168,8 +168,8 @@
 </li>
 </ol>
 <p>需要有更高生产力的日志系统才撑的住。</p>
-<p>某日和杨百万吹水，偶然聊到日志传输的的问题。很有意思，每台机器上部署一个 Flume 实例作为 &quot;logging agent&quot;，
-业务进程只需把日志投递到本机上的 agent ，避开跨网传输的风险。投递完成的日志由 agent 转运并保证必达(Reliable Message Delivery)。</p>
+<p>某日偶然和杨百万吹水，聊到日志传输的的问题。总结一下思路，每台机器上部署一个 &quot;logging agent&quot;，
+业务进程只需把日志投递到本机上的 agent，避开跨网传输的风险。投递完成的日志由 agent 转运并保证必达(Reliable Message Delivery)。</p>
 <img alt="日志投递" class="uml" src="https://blog.dogame.cc/images/99e2ea74c826f3f6f2998f3f3ad2e78f.png" />
 <p>一切豁然开朗，有了实时可靠的日志投递，剩下的事就简单了。</p>
 <ul class="simple">
