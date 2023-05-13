@@ -30,9 +30,14 @@ ul.posts li {
     max-width: 100%;
     max-height: 100%;
 }
+
 #post a {
     word-wrap: break-word;
     word-break: break-all;
+}
+
+#post p {
+    font-family: "Hiragino Sans GB", "Microsoft Yahei", Helvetica, "Helvetica Neue", "微软雅黑", Tahoma, Arial, sans-serif
 }
 
 @media screen and (max-device-width: 500px) {

@@ -632,12 +632,12 @@ textarea {
   min-height: 60px;
 }
 
-label,
+/* label,
 legend {
   display: block;
   font-weight: bold;
   font-size: 13px;
-}
+} */
 
 select {
   width: 220px;
@@ -1185,7 +1185,7 @@ body {
 }
 
 h1.title {
-  font-weight: 800;
+  font-weight: bold;
 }
 
 h1 {
