@@ -134,18 +134,38 @@
 <span class="k">done</span>
 </pre></div>
 <p>虽然可行，但有很大瑕疵，主要在于：</p>
-<ol class="arabic simple">
-<li>CPU算力浪费。rsync 每次启动会重读日志文件内容分块算 hash ,传输前还会做压缩。频繁启动它会导致 CPU 负载过高，尽管可以按日期分目录，但也只是五十步笑百步。</li>
-<li>逻辑丑陋。从 rsync 进程运行结束后到下一轮 inotifywait 进程启动前总有点时间间隔，这中间发生的文件变化可能会漏掉，除非日志文件一直在持续写。也许不值得计较，但总归是个逻辑问题……</li>
+<ol class="arabic">
+<li><div class="first line-block">
+<div class="line">CPU算力浪费。</div>
+<div class="line">rsync 每次启动会重读日志文件内容分块算 hash ,传输前还会做压缩。频繁启动它会导致 CPU 负载过高，尽管可以按日期分目录，但也只是五十步笑百步。</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line">逻辑丑陋。</div>
+<div class="line">从 rsync 进程运行结束后到下一轮 inotifywait 进程启动前总有点时间间隔，这中间发生的文件变化可能会漏掉，除非日志文件一直在持续写。也许不值得计较，但总归是个逻辑问题……</div>
+</div>
+</li>
 </ol>
 <p>综上，rsync 方案并没有多好，付出了很大代价（硬件资源，心理压力，以及运维工作量）才换来分布式环境下日志中心化的局面。</p>
 <p>无论如何，日志中心化的问题暂且按下，但其它问题却显得尖锐起来。比如我们检索程序日志要反复 <tt class="docutils literal">grep <span class="pre">-P</span> &quot;$regex&quot;</tt> 一堆文件，正则动不动就复杂到需要抄小本本。
 而数据分析方面，使用 python 硬编码实现的统计代码可维护性很差，远不如 SQL 简洁。眼看着要变成屎山，我于是写了个程序将日志增量导入到 OLAP 系统以支持 SQL。
 至此，这个歪歪斜斜的日志收集“系统”进化到关键点了，还有以下几点缺陷需要解决：</p>
-<ol class="arabic simple">
-<li>接口难用，与精心设计的 logstash 相比简直云泥之别。</li>
-<li>投递实时性差，由于 rsync 耗费算力过多，权衡成本后只能妥协在分钟级的滞后性上。</li>
-<li>运维工作量大，多了个旁门左道的常驻进程，还得时常注意 rsync 的 CPU 占用率。</li>
+<ol class="arabic">
+<li><div class="first line-block">
+<div class="line">接口难用。</div>
+<div class="line">与精心设计的 logstash 相比简直云泥之别。</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line">投递实时性不够。</div>
+<div class="line">由于 rsync 耗费算力过多，权衡成本后只能妥协在分钟级的滞后性上。</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line">运维负担。</div>
+<div class="line">多了个旁门左道的常驻进程，还得时常注意 rsync 的 CPU 占用率。</div>
+</div>
+</li>
 </ol>
 <p>需要有更高生产力的日志系统才撑的住。</p>
 <p>某日和杨百万吹水，偶然聊到日志传输的的问题。很有意思，每台机器上部署一个 Flume 实例作为 &quot;logging agent&quot;，
