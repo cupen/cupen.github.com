@@ -175,7 +175,7 @@ h5,
 h6 {
   color: #181818;
   font-family: "Hiragino Sans GB", "Microsoft Yahei", Helvetica, "Helvetica Neue", Arial, sans-serif;
-  font-weight: normal;
+  font-weight: bold;
 }
 
 h1 a,
@@ -1318,13 +1318,17 @@ nav h2 {
   padding-top: 25px;
 }
 
-/* .sidebar p {
+.sidebar p {
   font-weight: 100;
+}
+
+.post_title a {
+  font-weight: 400;
 }
 
 .sidebar a {
   font-weight: 600;
-} */
+}
 
 .content {
   font-style: normal;
