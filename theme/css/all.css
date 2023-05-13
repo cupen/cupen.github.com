@@ -923,4 +923,6 @@ h2 {
 }
 
 pre { white-space: pre; overflow: auto; }
-code, pre { font-family: Monaco,Menlo,Consolas,"Courier New",monospace; }
+code, pre { 
+  font-family: "Hiragino Sans GB", "Microsoft Yahei", Helvetica,"Helvetica Neue", "微软雅黑", Tahoma, Arial,sans-serif
+}
