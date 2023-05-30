@@ -119,19 +119,19 @@
     <p>尽管 ansible 官方不支持 Windows，但 Windows 上的一些 POSIX 兼容环境是可以的，这里记录下使用 msys2 环境安装 ansible 的过程。msys2 是基于 cygwin 开发的，用法与其相似。</p>
 <p>通常来说，直接执行 <code>pip2 install ansible</code> 即可, 但由于一些依赖（准确说是依赖的依赖）包含一些专为 *nix 系统开发的 C 代码，导致在安装 ansible 前需要一点小折腾。顺带吐槽下，即使在 *nix 下，也不是 100% 免于折腾，这是 C 的工程特(Wen)性(Ti)决定的。</p>
 <p>下面开始痛苦之旅。  </p>
-<h2>安装 python2 环境 和 C/C++ 编译环境</h2>
+<h2 id="python2-cc">安装 python2 环境 和 C/C++ 编译环境</h2>
 <div class="highlight"><pre><span></span><code>pacman -S python2 python2-pip --noconfirm
 pacman -S base-devel --noconfirm
 </code></pre></div>
 
-<h2>安装依赖 cffi （头文件路径问题）</h2>
+<h2 id="cffi">安装依赖 cffi （头文件路径问题）</h2>
 <div class="highlight"><pre><span></span><code>pacman -S libffi-devel --noconfirm
 <span class="nv">path_libffi_include</span><span class="o">=</span><span class="k">$(</span>pacman -Ql libffi-devel <span class="p">|</span> grep -o -e <span class="s1">&#39;[^ ]*include/$&#39;</span> <span class="k">)</span>
 ln -s <span class="nv">$path_libffi_include</span> /usr/include/libffi
 pip2 install cffi
 </code></pre></div>
 
-<h2>安装依赖 pycrypto （未定义的 u_int ）</h2>
+<h2 id="pycrypto-u_int">安装依赖 pycrypto （未定义的 u_int ）</h2>
 <p>问题讨论见:<br>
 <a href="http://cygwin.1069669.n5.nabble.com/python-2-7-12-pip-install-with-extensions-fails-with-warning-quot-BSD-VISIBLE-quot-redefined-td131045.html">http://cygwin.1069669.n5.nabble.com/python-2-7-12-pip-install-with-extensions-fails-with-warning-quot-BSD-VISIBLE-quot-redefined-td131045.html</a></p>
 <div class="highlight"><pre><span></span><code>pacman -S openssl-devel --noconfirm
@@ -139,11 +139,11 @@ sed -i <span class="s2">&quot;s/#define __BSD_VISIBLE 1/#define __BSD_VISIBLE 0/
 pip2 install pycrypto
 </code></pre></div>
 
-<h2>安装 ansible  完事！</h2>
+<h2 id="ansible">安装 ansible  完事！</h2>
 <div class="highlight"><pre><span></span><code>pip2 install <span class="nv">ansible</span><span class="o">==</span><span class="m">2</span>.3
 </code></pre></div>
 
-<h2>坚持下，再绕过一个神坑</h2>
+<h2 id="_1">坚持下，再绕过一个神坑</h2>
 <p>现在可以执行 ansible 了，但你大概率会碰到这样的一个错误。  </p>
 <div class="highlight"><pre><span></span><code>Failed to connect to the host via ssh: mux_client_request_session: <span class="nb">read</span> from master failed: Connection reset by peer  
 Failed to connect to new control master  
@@ -168,7 +168,7 @@ wget <span class="nv">$ansible_cfg_src</span> -O <span class="nv">$ansible_cfg_d
 sed -i <span class="s2">&quot;s/^\[ssh_connection\]/\[ssh_connection\]\nssh_args = -o ControlMaster=no -o ControlPersist=60s\n/g&quot;</span> <span class="nv">$ansible_cfg_dest</span>
 </code></pre></div>
 
-<h2>搞定，可以开始爽了。</h2>
+<h2 id="_2">搞定，可以开始爽了。</h2>
 <div class="highlight"><pre><span></span><code>ansible all -m ping
 </code></pre></div>
 
