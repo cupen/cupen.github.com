@@ -123,7 +123,7 @@
 </pre>
 
 <p>我这几年工作中常常用到 UID ，虽有不少开源实现，但在不同场合使用哪种方案总免不了计较下。因此留篇水文做点浅薄介绍，以便向人解释思路时能从容些。  </p>
-<p>UID (Unique identifier) 顾名思义是一种唯一性 ID，但区别于 GUID/UUID ，它只是有限范围内唯一。通常会在有上下文区分的前提下使用，比如在游戏项目中，玩家ID、物品ID、野怪ID、对局ID 等等可以分别选择不同的 UID 算法实现，只要保证相同类型对象 ID 唯一即可。</p>
+<p>UID (Unique identifier) 顾名思义是“唯一性标识”，但区别于 GUID/UUID ，它只是有限范围内唯一。通常会在有上下文区分的前提下使用，比如在游戏项目中，玩家ID、物品ID、野怪ID、对局ID 等等可以分别选择不同的 UID 算法实现，只要保证相同类型对象 ID 唯一即可。</p>
 <p>下面的代码展示了一个最原始的 UID 实现（别笑，高级算法也会用到计数器）。</p>
 <div class="highlight"><pre><span></span><code><span class="kd">var</span><span class="w"> </span><span class="nx">countor</span><span class="w"> </span><span class="kt">uint32</span><span class="w"></span>
 <span class="kd">func</span><span class="w"> </span><span class="nx">NextId</span><span class="p">()</span><span class="w"> </span><span class="kt">uint32</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
@@ -132,32 +132,32 @@
 </code></pre></div>
 
 <p>这个例子只保证进程内唯一，且进程重启后，计数器重置也会破坏唯一性。
-然而多数场合下，我们期望的 UID 既要满足跨进程唯一，也要满足重启后继续保持唯一性。  </p>
+然而多数场合下，我们期望的 UID 既要满足跨进程唯一，也要满足计数器重置（进程重启）后也唯一，即分布式 UID。   </p>
 <p>有两种改进思路：<br>
 一种是引入一个 borker 用来协调不同进程的 ID 分配范围，并将已分配出去的 ID 区间保存到数据库。就跟分蛋糕一样，你一口我一口，吃一口少一口。<br>
 参考下图：</p>
 <!-- ```plantuml
 @startuml
 participant "业务进程" as p
-participant "UID Agent" as agent
+participant "UID Broker" as bk
 participant "Database" as db 
 
 activate p
 p -> p++: 检查本地 ID 池，用尽前及时补充
-p -> agent: 获取新的 ID 范围
+p -> bk: 获取新的 ID 范围
 deactivate p
 
-activate agent
+activate bk
 deactivate p
-agent -> agent++: 分配 ID 范围
-agent -> db: 持久化
-deactivate agent
-deactivate agent
+bk -> bk++: 分配 ID 范围
+bk -> db: 持久化
+deactivate bk
+deactivate bk
 @enduml
 ```
  -->
 
-<p><img src="https://www.plantuml.com/plantuml/svg/SoWkIImgAStDuIe0qfd9cGM9UIKAIazsp7hQjV35_jdFLtGhAIGMAnIWoeTwkYWufgVcbO0b4q4iL0KkYIM9IOd5gM3vb2G5Bgx4v9BCiiIIL91H2hfs2WNQsbOApnOtF9k_zDcSDK_dR500clbiuuBtUtgUJrdnTCFUfvszJ_kxdatVzcBXqgUjhM1T4Aki55xqRN_QF-tPj0tFPxM0z3tjsVLo-XQkb5I4BGWR8PfG9S52S0D1JddQqVQojHTX64m9K4rA4j2bFOrFThO-xPa6DGTXCAO0bqDgNWemJ040"/></p>
+<p><img src="https://www.plantuml.com/plantuml/svg/SoWkIImgAStDuIe0qfd9cGM9UIKAIazsp7hQjV35_jdFLtGhAIGMAnIWoeTwkYWu5ULdfnQ1PPEoKQLT4aiIanABKy6IAKaAN5o9oIMPPOabgI2357Jj50gqjQqKdYrkU3P_wRCvQvxEsQ00DF7PnWNlz_GydxBYwOQzJpjxd_PtFPk-xSN2fKzRMo6wahAj55xqRN_QF-tPj0tFPxM0DBteQNuwUmjNIYh22eHrG1seCadP47D0rZ_jQ7lPseim0ogPaWHqMK_ZavsjJtkcmNKZp4Bm75BpKe111m00"/></p>
 <p>这种方案维护成本较高，我个人不太感冒。  </p>
 <p>另一种则是在 UID 里加入节点 ID 和时间戳，其中节点 ID 用来保证跨进程唯一，而时间戳则保证计数器重置后不会破坏唯一性。但在同一个时间戳里是不能让计数器重置的，所以算法要确保单位时间内只能生成有限数量的 ID 来杜绝这种情况。<br>
 以下是实现参考。 </p>
