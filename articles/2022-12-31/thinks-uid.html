@@ -33,7 +33,7 @@
   <h2><a href="https://blog.dogame.cc/">cupen<xcupen@gmail.com></a></h2>
 
   <div id="bio">
-    <p>Just stay handsome, stay rich.</p>
+    <p>Stay handsome, stay rich.</p>
   </div>
 
   <div id="social">
@@ -132,7 +132,7 @@
 </code></pre></div>
 
 <p>这个例子只保证进程内唯一，且进程重启后，计数器重置也会破坏唯一性。
-然而多数场合下，我们期望的 UID 既需要跨进程唯一，也需要在计数器重置（进程重启）后保持唯一。具备这些特性的 UID，又叫做分布式 UID。   </p>
+然而多数场合下，我们期望的 UID 既需要跨进程唯一，也需要在计数器重置（进程重启）后保持唯一。具备这些特性的 UID，就叫做分布式 UID。   </p>
 <p>有两种改进思路：<br>
 一种是引入一个 borker 用来协调不同进程的 ID 分配范围，并将已分配出去的 ID 区间保存到数据库。就跟分蛋糕一样，你一口我一口，吃一口少一口。<br>
 参考下图：</p>
